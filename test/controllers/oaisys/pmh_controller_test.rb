@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module Oaisys
-  class PmhControllerTest < ActionDispatch::IntegrationTest
+  class PMHControllerTest < ActionDispatch::IntegrationTest
     include Engine.routes.url_helpers
 
     # test "the truth" do
