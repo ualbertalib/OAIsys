@@ -1,4 +1,3 @@
 Oaisys::Engine.routes.draw do
-  resources :pmh, only: [:index]
-  root to: "pmh#index"
+  match '/', to: 'pmh#endpoint', via: [:get, :post]
 end
