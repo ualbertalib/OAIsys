@@ -6,6 +6,12 @@ class PMHConstraint
   end
 end
 
+class BadVerbConstraint < PMHConstraint
+  def matches?(request)
+    !super
+  end
+end
+
 class IdentifyConstraint < PMHConstraint
   def matches?(request)
     super && request.query_parameters[:verb] == 'Identify'
