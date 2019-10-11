@@ -49,5 +49,11 @@ class ListIdentifiersConstraint < PMHConstraint
 end
 
 Oaisys::Engine.routes.draw do
+  match '/', to: 'pmh#bad_verb', via: [:get, :post], constraints: BadVerbConstraint.new
+  match '/', to: 'pmh#identify', via: [:get, :post], constraints: IdentifyConstraint.new
+  match '/', to: 'pmh#list_sets', via: [:get, :post], constraints: ListSetsConstraint.new
+  match '/', to: 'pmh#list_metadata_formats', via: [:get, :post], constraints: ListMetadataFormatsConstraint.new
+  match '/', to: 'pmh#list_records', via: [:get, :post], constraints: ListRecordsConstraint.new
+  match '/', to: 'pmh#get_record', via: [:get, :post], constraints: GetRecordConstraint.new
   match '/', to: 'pmh#list_identifiers', via: [:get, :post], constraints: ListIdentifiersConstraint.new
 end
