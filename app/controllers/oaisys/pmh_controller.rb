@@ -41,7 +41,7 @@ module Oaisys
 
       if unexpected_arguments || missing_required_arguments
         verb = verb.to_s.camelize
-        error_code = 'badArgument'
+        error_code = :badArgument
         error_message = t('error_messages.illegal_or_missing_arguments')
         render template: 'responses/error_response.xml.builder', locals: { verb: verb, error_code: error_code, error_message: error_message }
       end
