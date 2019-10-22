@@ -1,0 +1,3 @@
+en:
+  error_messages:
+    illegal_or_missing_arguments: 'The request includes illegal arguments or is missing required arguments.'
