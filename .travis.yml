@@ -5,9 +5,6 @@ dist: xenial
 services:
   - postgresql
 
-addons:
-  chrome: stable
-
 rvm:
   - 2.5
 
