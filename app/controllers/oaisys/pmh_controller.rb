@@ -2,49 +2,64 @@ require_dependency "oaisys/application_controller"
 
 module Oaisys
   class PMHController < ApplicationController
-    layout 'oai_pmh_response.xml.builder'
-
     def bad_verb
     end
 
     def identify
-      expect_args(__method__, required: %i(), optional: %i(), exclusive: %i())
+      expect_args(for_verb: :Identify)
     end
 
     def list_sets
-      expect_args(__method__, required: %i(), optional: %i(), exclusive: %i(resumptionToken))
+      expect_args(for_verb: :ListSets, exclusive: [:resumptionToken])
     end
 
     def list_metadata_formats
-      expect_args(__method__, required: %i(), optional: %i(identifier), exclusive: %i())
+      expect_args(for_verb: :ListMetadataFormats, optional: [:identifier])
     end
 
     def list_records
-      expect_args(__method__, required: %i(metadataPrefix), optional: %i(from until set), exclusive: %i(resumptionToken))
+      expect_args(for_verb: :ListRecords, required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken])
     end
 
     def get_record
-      expect_args(__method__, required: %i(identifier metadataPrefix), optional: %i(), exclusive: %i())
+      expect_args(for_verb: :GetRecord, required: [:identifier, :metadataPrefix])
     end
 
     def list_identifiers
-      expect_args(__method__, required: %i(metadataPrefix), optional: %i(from until set), exclusive: %i(resumptionToken))
+      expect_args(for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken])
     end
 
     private
 
-    def expect_args (verb, required:, optional:, exclusive:)
+    def expect_args (for_verb:, required: [], optional: [], exclusive: [])
       arguments = params.except('verb', 'controller', 'action').keys.map(&:to_sym)
       expected_verb_arguments = required + optional + exclusive
       unexpected_arguments = (arguments - expected_verb_arguments).present?
       missing_required_arguments = (required - arguments).present?
 
       if unexpected_arguments || missing_required_arguments
-        verb = verb.to_s.camelize
-        error_code = :badArgument
-        error_message = t('error_messages.illegal_or_missing_arguments')
-        render template: 'responses/error_response.xml.builder', locals: { verb: verb, error_code: error_code, error_message: error_message }
+        raise BadArgumentException.new(for_verb: for_verb)
       end
+    end
+
+    rescue_from 'Oaisys::PMHException' do |exception|
+      render template: 'pmh/error.xml.builder', locals: { verb: exception.for_verb, error_code: exception.error_code, error_message: exception.error_message }
+    end
+  end
+
+  class PMHException < StandardError
+    attr_reader :for_verb, :error_code, :error_message
+
+    def initialize(for_verb:, error_code:, error_message:)
+      @for_verb = for_verb
+      @error_code = error_code
+      @error_message = error_message
+    end
+  end
+
+  class BadArgumentException < PMHException
+    def initialize(for_verb:, error_code: :badArgument, error_message: I18n.t('error_messages.illegal_or_missing_arguments'))
+      super
     end
   end
 end
