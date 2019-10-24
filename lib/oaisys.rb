@@ -1,5 +1,6 @@
 require "oaisys/engine"
 
 module Oaisys
-  # Your code goes here...
+  require 'oaisys/errors/pmh_error'
+  require 'oaisys/errors/bad_argument_error'
 end

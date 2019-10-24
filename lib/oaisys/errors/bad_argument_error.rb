@@ -1,7 +1,4 @@
 module Oaisys
-  class PMHError < StandardError
-  end
-
   class BadArgumentError < PMHError
     attr_reader :for_verb
 
