@@ -6,27 +6,27 @@ module Oaisys
     end
 
     def identify
-      expect_args(for_verb: :Identify)
+      expect_no_args for_verb: :Identify
     end
 
     def list_sets
-      expect_args(for_verb: :ListSets, exclusive: [:resumptionToken])
+      expect_args for_verb: :ListSets, exclusive: [:resumptionToken]
     end
 
     def list_metadata_formats
-      expect_args(for_verb: :ListMetadataFormats, optional: [:identifier])
+      expect_args for_verb: :ListMetadataFormats, optional: [:identifier]
     end
 
     def list_records
-      expect_args(for_verb: :ListRecords, required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken])
+      expect_args for_verb: :ListRecords, required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
     end
 
     def get_record
-      expect_args(for_verb: :GetRecord, required: [:identifier, :metadataPrefix])
+      expect_args for_verb: :GetRecord, required: [:identifier, :metadataPrefix]
     end
 
     def list_identifiers
-      expect_args(for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken])
+      expect_args for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
     end
 
     private
@@ -38,28 +38,13 @@ module Oaisys
       missing_required_arguments = (required - arguments).present?
 
       if unexpected_arguments || missing_required_arguments
-        raise BadArgumentException.new(for_verb: for_verb)
+        raise BadArgumentError.new(for_verb: for_verb)
       end
     end
 
-    rescue_from 'Oaisys::PMHException' do |exception|
-      render template: 'pmh/error.xml.builder', locals: { verb: exception.for_verb, error_code: exception.error_code, error_message: exception.error_message }
-    end
-  end
-
-  class PMHException < StandardError
-    attr_reader :for_verb, :error_code, :error_message
-
-    def initialize(for_verb:, error_code:, error_message:)
-      @for_verb = for_verb
-      @error_code = error_code
-      @error_message = error_message
-    end
-  end
-
-  class BadArgumentException < PMHException
-    def initialize(for_verb:, error_code: :badArgument, error_message: I18n.t('error_messages.illegal_or_missing_arguments'))
-      super
+    # Conventional way of calling expect_args for a verb with no arguments.
+    def expect_no_args(for_verb:)
+      expect_args(for_verb: for_verb)
     end
   end
 end
