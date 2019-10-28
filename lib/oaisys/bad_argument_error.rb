@@ -1,17 +1,17 @@
-module Oaisys
-  class BadArgumentError < PMHError
-    attr_reader :for_verb
+class Oaisys::BadArgumentError < Oaisys::PMHError
 
-    def initialize(for_verb:)
-      @for_verb = for_verb
-    end
+  attr_reader :for_verb
 
-    def error_code
-      :badArgument
-    end
-
-    def error_message
-      I18n.t('error_messages.illegal_or_missing_arguments')
-    end
+  def initialize(for_verb:)
+    @for_verb = for_verb
   end
+
+  def error_code
+    :badArgument
+  end
+
+  def error_message
+    I18n.t('error_messages.illegal_or_missing_arguments')
+  end
+
 end

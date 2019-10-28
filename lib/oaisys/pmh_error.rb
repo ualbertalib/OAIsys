@@ -1,4 +1,2 @@
-module Oaisys
-  class PMHError < StandardError
-  end
+class Oaisys::PMHError < StandardError
 end

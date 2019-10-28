@@ -1,4 +1,2 @@
-module Oaisys
-  class ApplicationJob < ActiveJob::Base
-  end
+class Oaisys::ApplicationJob < ActiveJob::Base
 end
