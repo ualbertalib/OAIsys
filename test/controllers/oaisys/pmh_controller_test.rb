@@ -2,10 +2,10 @@ require 'test_helper'
 
 class Oaisys::PMHControllerTest < ActionDispatch::IntegrationTest
 
-  include Engine.routes.url_helpers
+  include Oaisys::Engine.routes.url_helpers
 
   setup do
-    @routes = Engine.routes
+    @routes = Oaisys::Engine.routes
   end
 
   def test_bad_verb_route
