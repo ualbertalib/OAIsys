@@ -11,6 +11,7 @@ PATH
   specs:
     oaisys (0.1.0)
       builder (~> 3.0)
+      pg
       rails (~> 5.2.3)
 
 GEM
@@ -135,7 +136,6 @@ PLATFORMS
 DEPENDENCIES
   acts_as_rdfable!
   oaisys!
-  pg
   pry
 
 BUNDLED WITH
