@@ -1,5 +1,5 @@
-module Oaisys
-  class ApplicationRecord < ActiveRecord::Base
-    self.abstract_class = true
-  end
+class Oaisys::ApplicationRecord < ActiveRecord::Base
+
+  self.abstract_class = true
+
 end
