@@ -1,6 +1,7 @@
 require_dependency 'oaisys/application_controller'
 
 class Oaisys::PMHController < Oaisys::ApplicationController
+
   before_action :before_action_method
 
   SUPPORTED_FORMATS = [
@@ -13,7 +14,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     { metadataPrefix: 'ore',
       schema: 'http://www.kbcafe.com/rss/atom.xsd.xml',
       metadataNamespace: 'http://www.w3.org/2005/Atom' }
-    ].freeze
+  ].freeze
 
   def before_action_method
     @short_header = false
@@ -34,7 +35,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     expect_args for_verb: :ListMetadataFormats, optional: [:identifier]
 
     respond_to do |format|
-      format.xml { render :list_metadata_formats, locals: { verb: :ListMetadataFormats, supported_formats: SUPPORTED_FORMATS } }
+      format.xml do
+        render :list_metadata_formats, locals: { verb: :ListMetadataFormats, supported_formats: SUPPORTED_FORMATS }
+      end
     end
   end
 
