@@ -13,6 +13,9 @@ PATH
       builder (~> 3.0)
       pg
       rails (~> 5.2.3)
+      rubocop
+      rubocop-performance
+      rubocop-rails
 
 GEM
   remote: https://rubygems.org/
@@ -69,7 +72,7 @@ GEM
       activesupport (>= 4.2.0)
     i18n (1.7.0)
       concurrent-ruby (~> 1.0)
-    jaro_winkler (1.5.3)
+    jaro_winkler (1.5.4)
     loofah (2.3.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -121,7 +124,7 @@ GEM
       thor (>= 0.19.0, < 2.0)
     rainbow (3.0.0)
     rake (13.0.0)
-    rubocop (0.75.1)
+    rubocop (0.76.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.6)
@@ -157,9 +160,6 @@ DEPENDENCIES
   acts_as_rdfable!
   oaisys!
   pry
-  rubocop
-  rubocop-performance
-  rubocop-rails
 
 BUNDLED WITH
    2.0.2

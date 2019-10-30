@@ -29,9 +29,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rails', '~> 5.2.3'
 
   spec.add_dependency 'pg'
+  spec.add_dependency 'rubocop'
+  spec.add_dependency 'rubocop-performance'
+  spec.add_dependency 'rubocop-rails'
 
   spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'rubocop'
-  spec.add_development_dependency 'rubocop-performance'
-  spec.add_development_dependency 'rubocop-rails'
 end
