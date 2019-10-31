@@ -2,8 +2,6 @@ require_dependency 'oaisys/application_controller'
 
 class Oaisys::PMHController < Oaisys::ApplicationController
 
-  before_action :before_action_method
-
   SUPPORTED_FORMATS = [
     { metadataPrefix: 'oai_dc',
       schema: 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
@@ -15,10 +13,6 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       schema: 'http://www.kbcafe.com/rss/atom.xsd.xml',
       metadataNamespace: 'http://www.w3.org/2005/Atom' }
   ].freeze
-
-  def before_action_method
-    @short_header = false
-  end
 
   def bad_verb; end
 
