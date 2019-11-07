@@ -7,6 +7,12 @@ GIT
       rails (~> 5.2.3)
 
 PATH
+  remote: ../builder_deferred_tagging
+  specs:
+    builder_deferred_tagging (0.1.0)
+      builder
+
+PATH
   remote: .
   specs:
     oaisys (0.1.0)
@@ -158,6 +164,7 @@ PLATFORMS
 
 DEPENDENCIES
   acts_as_rdfable!
+  builder_deferred_tagging!
   oaisys!
   pry
 

@@ -12,4 +12,12 @@ class Oaisys::ApplicationController < ActionController::Base
     end
   end
 
+  def deferred_param_tagging(tag, &block)
+    xml = Builder::XmlMarkup.new
+    xml.tag!(tag, xml.deferred_attributes) do
+      xml << block.yield
+    end
+  end
+  helper_method :deferred_param_tagging
+
 end

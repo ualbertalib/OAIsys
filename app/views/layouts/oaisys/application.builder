@@ -1,5 +1,6 @@
+xml_body = Builder::XmlMarkup.new
 xml.instruct! :xml, version: '1.0'
-xml.target! << '<OAI-PMH ' + Nokogiri::HTML.parse(content_for(:oai_pmh_header)) + '>'
-xml.responseDate Time.now.utc.xmlschema
-xml << yield
-xml.target! << '</OAI-PMH>'
+xml << deferred_param_tagging('OAI-PMH') do
+  xml_body.responseDate Time.now.utc.xmlschema
+  xml_body << yield
+end

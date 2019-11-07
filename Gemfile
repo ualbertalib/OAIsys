@@ -16,3 +16,4 @@ gemspec
 
 # RDF stuff
 gem 'acts_as_rdfable', github: 'mbarnett/acts_as_rdfable', tag: 'v0.01'
+gem 'builder_deferred_tagging', github: 'ualbertalib/builder_deferred_tagging'
