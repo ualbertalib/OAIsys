@@ -10,6 +10,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
 
   def test_unexpected_arg_xml
     get oaisys_path + '?verb=ListMetadataFormats&nastyParam=nasty', headers: { 'Accept' => 'application/xml' }
+    assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
     document = Nokogiri::XML(@response.body)
@@ -25,6 +26,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
   def test_missing_required_arg_xml
     # Missing required metadataPrefix param
     get oaisys_path + '?verb=ListRecords', headers: { 'Accept' => 'application/xml' }
+    assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
     document = Nokogiri::XML(@response.body)
