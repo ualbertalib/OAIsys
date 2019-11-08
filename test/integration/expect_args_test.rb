@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class NavigationTest < ActionDispatch::IntegrationTest
+class ExpectArgsTest < ActionDispatch::IntegrationTest
 
   include Oaisys::Engine.routes.url_helpers
 
