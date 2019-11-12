@@ -11,7 +11,7 @@ content_for :oai_pmh_header do
   http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd http://www.w3.org/2005/Atom"'
 end
 
-xml.request('https://era.library.ualberta.ca/oai', verb: verb)
+xml.request('https://era.library.ualberta.ca/oai', verb: 'ListMetadataFormats')
 xml.tag!('ListMetadataFormats') do
   supported_formats.each do |supported_format|
     xml.tag!('metadataFormat') do
