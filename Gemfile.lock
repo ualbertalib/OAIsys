@@ -6,6 +6,15 @@ GIT
     acts_as_rdfable (0.1.0)
       rails (~> 5.2.3)
 
+GIT
+  remote: https://github.com/ualbertalib/builder_deferred_tagging.git
+  revision: 4c51f3e89c145aed34ac69182d2bae4f6bc088f3
+  tag: v0.01
+  specs:
+    builder_deferred_tagging (0.1.0)
+      builder
+      request_store
+
 PATH
   remote: .
   specs:
@@ -124,6 +133,8 @@ GEM
       thor (>= 0.19.0, < 2.0)
     rainbow (3.0.0)
     rake (13.0.0)
+    request_store (1.4.1)
+      rack (>= 1.4)
     rubocop (0.76.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
@@ -158,6 +169,7 @@ PLATFORMS
 
 DEPENDENCIES
   acts_as_rdfable!
+  builder_deferred_tagging!
   oaisys!
   pry
 
