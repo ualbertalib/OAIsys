@@ -18,6 +18,10 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   def identify
     expect_no_args for_verb: :Identify
+
+    respond_to do |format|
+      format.xml { render :identify }
+    end
   end
 
   def list_sets
@@ -30,7 +34,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     respond_to do |format|
       format.xml do
-        render :list_metadata_formats, locals: { verb: :ListMetadataFormats, supported_formats: SUPPORTED_FORMATS }
+        render :list_metadata_formats, locals: { supported_formats: SUPPORTED_FORMATS }
       end
     end
   end

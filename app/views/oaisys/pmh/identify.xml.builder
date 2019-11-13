@@ -19,13 +19,21 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
                             'http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd '\
                             'http://www.w3.org/2005/Atom')
 
-xml.request('https://era.library.ualberta.ca/oai', verb: 'ListMetadataFormats')
-xml.tag!('ListMetadataFormats') do
-  supported_formats.each do |supported_format|
-    xml.tag!('metadataFormat') do
-      xml.metadataPrefix supported_format[:metadataPrefix]
-      xml.schema supported_format[:schema]
-      xml.metadataNamespace supported_format[:metadataNamespace]
+xml.request('https://era.library.ualberta.ca/oai', verb: 'Identify')
+xml.Identify do
+  xml.repositoryName 'ERA: Education and Research Archive'
+  xml.baseURL 'https://era.library.ualberta.ca/oai'
+  xml.protocolVersion '2.0'
+  xml.adminEmail 'eraadmi@ualberta.ca'
+  xml.earliestDatestamp '2018-06-22T13:06:50Z'
+  xml.deletedRecord 'no'
+  xml.granularity 'YYYY-MM-DDThh:mm:ssZ'
+  xml.description do
+    xml.tag!('oai-id:oai-identifier') do
+      xml.tag!('oai-id:scheme', 'oai')
+      xml.tag!('oai-id:repositoryIdentifier', 'era.library.ualberta.ca')
+      xml.tag!('oai-id:delimiter', ':')
+      xml.tag!('oai-id:sampleIdentifier', 'oai:era.library.ualberta.ca:1d7047d8-f164-45bb-b62c-ae6045eb0c42')
     end
   end
 end
