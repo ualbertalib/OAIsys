@@ -20,9 +20,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     expect_no_args for_verb: :Identify
 
     respond_to do |format|
-      format.xml do
-        render :identify
-      end
+      format.xml { render :identify }
     end
   end
 
