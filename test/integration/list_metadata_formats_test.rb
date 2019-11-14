@@ -18,7 +18,7 @@ class ListMetadataFormatsTest < ActionDispatch::IntegrationTest
 
     assert_select 'OAI-PMH' do
       assert_select 'responseDate'
-      assert_select 'request'
+      assert_select 'request', 'https://era.library.ualberta.ca/oai'
       assert_select 'ListMetadataFormats' do
         assert_select 'metadataFormat' do
           assert_select 'metadataPrefix', 'oai_dc'

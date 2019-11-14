@@ -1,10 +1,10 @@
-
 <schema targetNamespace="http://www.openarchives.org/OAI/2.0/"
         xmlns="http://www.w3.org/2001/XMLSchema"
         xmlns:oai="http://www.openarchives.org/OAI/2.0/"
         elementFormDefault="qualified"
         attributeFormDefault="unqualified">
 
+  <import schemaLocation="oai-identifier.xsd"/>
   <annotation>
     <documentation>
       XML Schema which can be used to validate replies to all OAI-PMH
