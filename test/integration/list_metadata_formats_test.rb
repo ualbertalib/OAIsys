@@ -9,7 +9,7 @@ class ListMetadataFormatsTest < ActionDispatch::IntegrationTest
   end
 
   def test_list_metadata_formats_xml
-    get oaisys_path + '?verb=ListMetadataFormats', headers: { 'Accept' => 'application/xml' }
+    get oaisys_path(verb: 'ListMetadataFormats'), headers: { 'Accept' => 'application/xml' }
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
@@ -18,7 +18,7 @@ class ListMetadataFormatsTest < ActionDispatch::IntegrationTest
 
     assert_select 'OAI-PMH' do
       assert_select 'responseDate'
-      assert_select 'request'
+      assert_select 'request', 'https://era.library.ualberta.ca/oai'
       assert_select 'ListMetadataFormats' do
         assert_select 'metadataFormat' do
           assert_select 'metadataPrefix', 'oai_dc'

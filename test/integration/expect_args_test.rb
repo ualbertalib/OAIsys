@@ -9,7 +9,7 @@ class ExpectArgsTest < ActionDispatch::IntegrationTest
   end
 
   def test_unexpected_arg_xml
-    get oaisys_path + '?verb=ListMetadataFormats&nastyParam=nasty', headers: { 'Accept' => 'application/xml' }
+    get oaisys_path(verb: 'ListMetadataFormats', nastyParam: 'nasty'), headers: { 'Accept' => 'application/xml' }
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
@@ -25,7 +25,7 @@ class ExpectArgsTest < ActionDispatch::IntegrationTest
 
   def test_missing_required_arg_xml
     # Missing required metadataPrefix param
-    get oaisys_path + '?verb=ListRecords', headers: { 'Accept' => 'application/xml' }
+    get oaisys_path(verb: 'ListRecords'), headers: { 'Accept' => 'application/xml' }
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
