@@ -9,7 +9,7 @@ class IdentifyTest < ActionDispatch::IntegrationTest
   end
 
   def test_identify_xml
-    get oaisys_path + '?verb=Identify', headers: { 'Accept' => 'application/xml' }
+    get oaisys_path(verb: 'Identify'), headers: { 'Accept' => 'application/xml' }
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
