@@ -6,7 +6,7 @@ class Oaisys::ApplicationController < ActionController::Base
     respond_to do |format|
       format.xml do
         render :error, locals: {
-          verb: exception.for_verb, error_code: exception.error_code, error_message: exception.error_message
+          parameters: exception.parameters, error_code: exception.error_code, error_message: exception.error_message
         }
       end
     end

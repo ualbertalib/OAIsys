@@ -19,13 +19,15 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
                             'http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd '\
                             'http://www.w3.org/2005/Atom')
 
-xml.tag!('request', parameters.to_unsafe_h, 'https://era.library.ualberta.ca/oai')
-xml.tag!('ListMetadataFormats') do
-  supported_formats.each do |supported_format|
-    xml.tag!('metadataFormat') do
-      xml.metadataPrefix supported_format[:metadataPrefix]
-      xml.schema supported_format[:schema]
-      xml.metadataNamespace supported_format[:metadataNamespace]
+xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
+xml.ListIdentifiers do
+  results.each do |result|
+    xml.tag!('header') do
+      xml.identifier 'oai:era.library.ualberta.ca:' + result.id
+      xml.datestamp result.record_created_at.utc.xmlschema
+      result.member_of_paths.each do |set|
+        xml.setSpec set.tr('/', ':')
+      end
     end
   end
 end

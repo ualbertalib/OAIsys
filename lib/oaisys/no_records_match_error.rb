@@ -1,4 +1,4 @@
-class Oaisys::BadArgumentError < Oaisys::PMHError
+class Oaisys::NoRecordsMatchError < Oaisys::PMHError
 
   attr_reader :parameters
 
@@ -7,11 +7,11 @@ class Oaisys::BadArgumentError < Oaisys::PMHError
   end
 
   def error_code
-    :badArgument
+    :noRecordsMatch
   end
 
   def error_message
-    I18n.t('error_messages.illegal_or_missing_arguments')
+    I18n.t('error_messages.no_record_found')
   end
 
 end
