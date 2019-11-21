@@ -16,6 +16,14 @@ class BadVerbConstraint < PMHConstraint
 
 end
 
+class NoVerbConstraint < PMHConstraint
+
+  def matches?(request)
+    !request.query_parameters.key?(:verb)
+  end
+
+end
+
 class IdentifyConstraint < PMHConstraint
 
   def matches?(request)
@@ -66,6 +74,7 @@ end
 
 Oaisys::Engine.routes.draw do
   match '/', to: 'pmh#bad_verb', via: [:get, :post], constraints: BadVerbConstraint.new
+  match '/', to: 'pmh#no_verb', via: [:get, :post], constraints: NoVerbConstraint.new
   match '/', to: 'pmh#identify', via: [:get, :post], constraints: IdentifyConstraint.new
   match '/', to: 'pmh#list_sets', via: [:get, :post], constraints: ListSetsConstraint.new
   match '/', to: 'pmh#list_metadata_formats', via: [:get, :post], constraints: ListMetadataFormatsConstraint.new

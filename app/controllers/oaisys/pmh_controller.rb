@@ -14,7 +14,14 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       metadataNamespace: 'http://www.w3.org/2005/Atom' }
   ].freeze
 
-  def bad_verb; end
+  def bad_verb
+    bad_verb = params.to_unsafe_h[:verb]
+    raise Oaisys::BadVerbError.new(bad_verb: bad_verb)
+  end
+
+  def no_verb
+    raise Oaisys::BadVerbError.new(bad_verb: nil)
+  end
 
   def identify
     expect_no_args for_verb: :Identify
