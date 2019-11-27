@@ -19,7 +19,7 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
                             'http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd '\
                             'http://www.w3.org/2005/Atom')
 
-xml.tag!('request', parameters.to_unsafe_h, 'https://era.library.ualberta.ca/oai')
+xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 xml.tag!('ListMetadataFormats') do
   supported_formats.each do |supported_format|
     xml.tag!('metadataFormat') do
