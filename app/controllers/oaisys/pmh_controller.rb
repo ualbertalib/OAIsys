@@ -52,15 +52,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def list_identifiers
     expect_args required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
 
-    metadata_prefix = params[:metadataPrefix]
-    if metadata_prefix == 'oai_dc'
-      results = Oaisys::Engine.config.oai_dc_model.public_items
-    elsif metadata_prefix == 'oai_etdms'
-      results = Oaisys::Engine.config.oai_etdms_model.public_items
-    else
-      raise Oaisys::CannotDisseminateFormatError.new(parameters: @parameters.slice(:verb, :metadataPrefix))
-    end
-    results = results.belongs_to_set(params[:set].tr(':', '/')) if params[:set].present?
+    results = results_from_metadata_prefix
+    results = results.belongs_to_path(params[:set].tr(':', '/')) if params[:set].present?
     raise Oaisys::NoRecordsMatchError.new(parameters: @parameters.slice(:verb, :metadataPrefix)) if results.empty?
 
     respond_to do |format|
@@ -73,15 +66,21 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   private
 
   def expect_args(required: [], optional: [], exclusive: [])
-    arguments = params.except('verb', 'controller', 'action').keys.map(&:to_sym)
-    expected_verb_arguments = required + optional + exclusive
-    unexpected_arguments = (arguments - expected_verb_arguments).present?
-    missing_required_arguments = (required - arguments).present?
-
+    ActionController::Parameters.action_on_unpermitted_parameters = :raise
+    params.require([:verb] + required)
     @parameters = params.permit([:verb] + required + optional + exclusive).to_h
-    return unless unexpected_arguments || missing_required_arguments
+  end
 
-    raise Oaisys::BadArgumentError.new(parameters: @parameters.slice(:verb))
+  def results_from_metadata_prefix
+    model = case params[:metadataPrefix]
+            when 'oai_dc'
+              Oaisys::Engine.config.oai_dc_model
+            when 'oai_etdms'
+              Oaisys::Engine.config.oai_etdms_model
+            else
+              raise Oaisys::CannotDisseminateFormatError.new(parameters: @parameters.slice(:verb, :metadataPrefix))
+            end
+    model.public_items
   end
 
 end
