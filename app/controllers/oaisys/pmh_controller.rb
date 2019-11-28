@@ -54,8 +54,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def list_identifiers
     expect_args for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set],
                 exclusive: [:resumptionToken]
-    results = results.record_created_from(params[:from]) if params[:from].present?
-    results = results.record_created_until(params[:until]) if params[:until].present?
+    results = results.created_on_or_after(params[:from]) if params[:from].present?
+    results = results.created_on_or_before(params[:until]) if params[:until].present?
   end
 
   private
