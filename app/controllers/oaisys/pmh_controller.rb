@@ -19,10 +19,6 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     raise Oaisys::BadVerbError.new(bad_verb: bad_verb)
   end
 
-  def no_verb
-    raise Oaisys::BadVerbError.new(bad_verb: nil)
-  end
-
   def identify
     expect_no_args for_verb: :Identify
 
