@@ -5,7 +5,7 @@ class Oaisys::ApplicationController < ActionController::Base
     respond_to do |format|
       format.xml do
         render :error, locals: {
-          # Being unsafe by using to_unsafe_h here because calling .pernit will throw this error again.
+          # Being unsafe by using to_unsafe_h here because calling .permit will throw this error again.
           parameters: params.to_unsafe_h.slice(:verb), error_code: :badArgument,
           error_message: I18n.t('error_messages.illegal_or_missing_arguments')
         }

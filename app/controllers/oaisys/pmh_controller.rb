@@ -52,13 +52,18 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def list_identifiers
     expect_args required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
 
-    results = results_from_metadata_prefix
-    results = results.belongs_to_path(params[:set].tr(':', '/')) if params[:set].present?
-    raise Oaisys::NoRecordsMatchError.new(parameters: @parameters.slice(:verb, :metadataPrefix)) if results.empty?
+    identifiers = if params[:set].present?
+                    public_items_for_metadata_format(format: params[:metadataPrefix], restricted_to_set: params[:set])
+                      .pluck(:id, :record_created_at, :member_of_paths)
+                  else
+                    public_items_for_metadata_format(format: params[:metadataPrefix])
+                      .pluck(:id, :record_created_at, :member_of_paths)
+                  end
+    raise Oaisys::NoRecordsMatchError.new(parameters: @parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
     respond_to do |format|
       format.xml do
-        render :list_identifiers, locals: { results: results, parameters: @parameters }
+        render :list_identifiers, locals: { identifiers: identifiers, parameters: @parameters }
       end
     end
   end
@@ -66,13 +71,12 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   private
 
   def expect_args(required: [], optional: [], exclusive: [])
-    ActionController::Parameters.action_on_unpermitted_parameters = :raise
     params.require([:verb] + required)
     @parameters = params.permit([:verb] + required + optional + exclusive).to_h
   end
 
-  def results_from_metadata_prefix
-    model = case params[:metadataPrefix]
+  def public_items_for_metadata_format(format:, restricted_to_set: nil)
+    model = case format
             when 'oai_dc'
               Oaisys::Engine.config.oai_dc_model
             when 'oai_etdms'
@@ -80,7 +84,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
             else
               raise Oaisys::CannotDisseminateFormatError.new(parameters: @parameters.slice(:verb, :metadataPrefix))
             end
-    model.public_items
+
+    !restricted_to_set.nil? ? model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) : model.public_items
   end
 
 end
