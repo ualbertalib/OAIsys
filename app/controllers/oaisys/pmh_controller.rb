@@ -28,11 +28,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   # TODO: Handle the identifier argument.
   def list_metadata_formats
-    expect_args optional: [:identifier]
+    parameters = expect_args optional: [:identifier]
 
     respond_to do |format|
       format.xml do
-        render :list_metadata_formats, locals: { supported_formats: SUPPORTED_FORMATS, parameters: @parameters }
+        render :list_metadata_formats, locals: { supported_formats: SUPPORTED_FORMATS, parameters: parameters }
       end
     end
   end
@@ -50,20 +50,20 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   # TODO: Handle from, until, and resumptionToken arguments.
   def list_identifiers
-    expect_args required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
-
+    parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
     identifiers = if params[:set].present?
-                    public_items_for_metadata_format(format: params[:metadataPrefix], restricted_to_set: params[:set])
+                    public_items_for_metadata_format(verb: parameters[:verb], format: params[:metadataPrefix],
+                                                     restricted_to_set: params[:set])
                       .pluck(:id, :record_created_at, :member_of_paths)
                   else
-                    public_items_for_metadata_format(format: params[:metadataPrefix])
+                    public_items_for_metadata_format(verb: parameters[:verb], format: params[:metadataPrefix])
                       .pluck(:id, :record_created_at, :member_of_paths)
                   end
-    raise Oaisys::NoRecordsMatchError.new(parameters: @parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
+    raise Oaisys::NoRecordsMatchError.new(parameters: parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
     respond_to do |format|
       format.xml do
-        render :list_identifiers, locals: { identifiers: identifiers, parameters: @parameters }
+        render :list_identifiers, locals: { identifiers: identifiers, parameters: parameters }
       end
     end
   end
@@ -72,17 +72,17 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   def expect_args(required: [], optional: [], exclusive: [])
     params.require([:verb] + required)
-    @parameters = params.permit([:verb] + required + optional + exclusive).to_h
+    params.permit([:verb] + required + optional + exclusive).to_h
   end
 
-  def public_items_for_metadata_format(format:, restricted_to_set: nil)
+  def public_items_for_metadata_format(verb:, format:, restricted_to_set: nil)
     model = case format
             when 'oai_dc'
               Oaisys::Engine.config.oai_dc_model
             when 'oai_etdms'
               Oaisys::Engine.config.oai_etdms_model
             else
-              raise Oaisys::CannotDisseminateFormatError.new(parameters: @parameters.slice(:verb, :metadataPrefix))
+              raise Oaisys::CannotDisseminateFormatError.new(parameters: { verb: verb, metadataPrefix: format })
             end
 
     !restricted_to_set.nil? ? model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) : model.public_items
