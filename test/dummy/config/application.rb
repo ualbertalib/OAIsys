@@ -32,8 +32,5 @@ module Dummy
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    # Set an action on unpermitted parameters to raise an exception, used to validate parameters.
-    ActionController::Parameters.action_on_unpermitted_parameters = :raise
-
   end
 end
