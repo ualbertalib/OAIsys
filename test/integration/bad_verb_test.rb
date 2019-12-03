@@ -6,8 +6,6 @@ class BadVerbTest < ActionDispatch::IntegrationTest
 
   setup do
     @routes = Oaisys::Engine.routes
-    # Set an action on unpermitted parameters to raise an exception, used to validate parameters.
-    ActionController::Parameters.action_on_unpermitted_parameters = :raise
   end
 
   def test_bad_verb_xml
