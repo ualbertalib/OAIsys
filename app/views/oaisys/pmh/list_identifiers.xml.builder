@@ -21,11 +21,11 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
 
 xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 xml.ListIdentifiers do
-  identifiers.each do |identifier|
+  identifiers.each do |identifier, date, sets|
     xml.tag!('header') do
-      xml.identifier 'oai:era.library.ualberta.ca:' + identifier[0]
-      xml.datestamp identifier[1].utc.xmlschema
-      identifier[2].each do |set|
+      xml.identifier 'oai:era.library.ualberta.ca:' + identifier
+      xml.datestamp date.utc.xmlschema
+      sets.each do |set|
         xml.setSpec set.tr('/', ':')
       end
     end
