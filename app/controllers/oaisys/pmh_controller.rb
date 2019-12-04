@@ -93,9 +93,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
             end
 
     model = model.public_items
-    model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) unless restricted_to_set.nil?
-    model = model.created_on_or_after(from_date) unless from_date.nil?
-    model = model.created_on_or_before(until_date) unless until_date.nil?
+    model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
+    model = model.created_on_or_after(from_date) if from_date.present?
+    model = model.created_on_or_before(until_date) if until_date.present?
 
     model
   end
