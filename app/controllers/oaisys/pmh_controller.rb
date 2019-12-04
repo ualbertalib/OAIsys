@@ -51,11 +51,24 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
   # rubocop:enable Naming/AccessorMethodName
 
+  # TODO: Handle resumptionToken argument.
   def list_identifiers
-    expect_args for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set],
-                exclusive: [:resumptionToken]
-    results = results.created_on_or_after(params[:from]) if params[:from].present?
-    results = results.created_on_or_before(params[:until]) if params[:until].present?
+    parameters = expect_args for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set],
+                             exclusive: [:resumptionToken]
+
+    public_items_params = { verb: parameters[:verb], format: parameters[:metadataPrefix] }
+    public_items_params = public_items_params.merge(restricted_to_set: parameters[:set]) if parameters[:set].present?
+    public_items_params = public_items_params.merge(from_date: parameters[:from]) if parameters[:from].present?
+    public_items_params = public_items_params.merge(until_date: parameters[:until]) if parameters[:until].present?
+
+    identifiers = public_items_for_metadata_format(public_items_params).pluck(:id, :record_created_at, :member_of_paths)
+    raise Oaisys::NoRecordsMatchError.new(parameters: parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
+
+    respond_to do |format|
+      format.xml do
+        render :list_identifiers, locals: { identifiers: identifiers, parameters: parameters }
+      end
+    end
   end
 
   private
@@ -69,9 +82,22 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     raise Oaisys::BadArgumentError.new(for_verb: for_verb) if unexpected_arguments || missing_required_arguments
   end
 
-  # Conventional way of calling expect_args for a verb with no arguments.
-  def expect_no_args(for_verb:)
-    expect_args(for_verb: for_verb)
+  def public_items_for_metadata_format(verb:, format:, restricted_to_set: nil, from_date: nil, until_date: nil)
+    model = case format
+            when 'oai_dc'
+              Oaisys::Engine.config.oai_dc_model
+            when 'oai_etdms'
+              Oaisys::Engine.config.oai_etdms_model
+            else
+              raise Oaisys::CannotDisseminateFormatError.new(parameters: { verb: verb, metadataPrefix: format })
+            end
+
+    model = model.public_items
+    model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) unless restricted_to_set.nil?
+    model = model.created_on_or_after(from_date) unless from_date.nil?
+    model = model.created_on_or_before(until_date) unless until_date.nil?
+
+    model
   end
 
 end
