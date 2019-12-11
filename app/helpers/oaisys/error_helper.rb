@@ -1,5 +1,5 @@
 module Oaisys::ErrorHelper
-  def error_header(error_code)
+  def error_header(error_code:)
     if error_code == :badArgument
       { 'xmlns': 'http://www.openarchives.org/OAI/2.0/',
         'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
