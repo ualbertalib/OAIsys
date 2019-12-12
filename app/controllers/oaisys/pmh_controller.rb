@@ -61,11 +61,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     public_items_params = public_items_params.merge(until_date: parameters[:until]) if parameters[:until].present?
 
     identifiers_model, total_count, cursor = public_items_for_metadata_format(public_items_params)
-    if identifiers_model.out_of_range?
+    identifiers = identifiers_model.pluck(:id, :record_created_at, :member_of_paths)
+
+    if identifiers_model.out_of_range? && parameters[:resumptionToken].present?
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
-
-    identifiers = identifiers_model.pluck(:id, :record_created_at, :member_of_paths)
     raise Oaisys::NoRecordsMatchError.new(parameters: parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
     parameters[:page] = parameters[:page].to_i + 1
