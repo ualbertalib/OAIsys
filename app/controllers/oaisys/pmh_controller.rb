@@ -54,23 +54,22 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
                              exclusive: [:resumptionToken]
 
-    parameters[:page] = 1 if parameters[:page].blank?
-    public_items_params = { verb: parameters[:verb], format: parameters[:metadataPrefix], page: parameters[:page].to_i }
+    public_items_params = { verb: parameters[:verb], format: parameters[:metadataPrefix],
+                            page: parameters[:page].blank? ? 1 : parameters[:page].to_i }
     public_items_params = public_items_params.merge(restricted_to_set: parameters[:set]) if parameters[:set].present?
     public_items_params = public_items_params.merge(from_date: parameters[:from]) if parameters[:from].present?
     public_items_params = public_items_params.merge(until_date: parameters[:until]) if parameters[:until].present?
 
     identifiers_model, total_count, cursor = public_items_for_metadata_format(public_items_params)
     identifiers = identifiers_model.pluck(:id, :record_created_at, :member_of_paths)
-
-    if identifiers_model.out_of_range? && parameters[:resumptionToken].present?
+    if identifiers_model.out_of_range? && parameters[:page].present?
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
     raise Oaisys::NoRecordsMatchError.new(parameters: parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
-    parameters[:page] = parameters[:page].to_i + 1
-    resumption_token = '&' + parameters.except(:verb, :resumptionToken).to_query
-    resumption_token_provided = parameters[:resumptionToken].present?
+    resumption_token_provided = parameters[:page].present?
+    parameters[:page] = parameters[:page].blank? ? 2 : parameters[:page].to_i + 1
+    resumption_token = CGI.escape(parameters.except(:verb).to_query)
     parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
     respond_to do |format|
       format.xml do
@@ -88,14 +87,17 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     # This makes the strong assumption that there's only one exclusive param per verb
     if params.key?(exclusive.first)
       params.require([:verb])
-      begin
-        params.require([:page] + required)
-        parameters = params.permit([:verb, :page] + required + optional + exclusive).to_h
-        parameters[:resumptionToken] = '&' + parameters.except(:verb, :resumptionToken).to_query
-        parameters
-      rescue ActionController::UnpermittedParameters, ActionController::ParameterMissing
+      parameters = Rack::Utils.parse_query(CGI.unescape(params[exclusive.first])).symbolize_keys
+      arguments = parameters.keys
+      expected_verb_arguments = [:page] + required + optional + exclusive
+      unexpected_arguments = (arguments - expected_verb_arguments).present?
+      missing_required_arguments = (required - arguments).present?
+
+      if unexpected_arguments || missing_required_arguments
         raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
       end
+
+      parameters.merge(verb: params[:verb])
     else
       params.require([:verb] + required)
       params.permit([:verb] + required + optional + exclusive).to_h
