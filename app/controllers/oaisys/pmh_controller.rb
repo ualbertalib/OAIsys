@@ -13,7 +13,6 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       schema: 'http://www.kbcafe.com/rss/atom.xsd.xml',
       metadataNamespace: 'http://www.w3.org/2005/Atom' }
   ].freeze
-  ITEMS_PER_REQUEST = 150
 
   def bad_verb; end
 
@@ -120,8 +119,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model = model.created_on_or_after(from_date) if from_date.present?
     model = model.created_on_or_before(until_date) if until_date.present?
 
-    model = model.page(page).per(ITEMS_PER_REQUEST)
-    cursor = (page - 1) * ITEMS_PER_REQUEST
+    items_per_request = Oaisys::Engine.config.items_per_request
+    model = model.page(page).per(items_per_request)
+    cursor = (page - 1) * items_per_request
     [model, model.total_count, cursor]
   end
 
