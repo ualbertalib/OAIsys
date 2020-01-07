@@ -1,7 +1,4 @@
-xml.push_deferred_attribute('xmlns': 'http://www.openarchives.org/OAI/2.0/',
-                            'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-                            'xsi:schemaLocation': 'http://www.openarchives.org/OAI/2.0/ '\
-                            'http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd')
+xml.push_deferred_attribute(error_header(error_code))
 
-xml.request(verb: verb)
+xml.tag!('request', parameters)
 xml.error(error_message, code: error_code)
