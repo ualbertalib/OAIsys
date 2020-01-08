@@ -14,40 +14,40 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       metadataNamespace: 'http://www.w3.org/2005/Atom' }
   ].freeze
 
-  def bad_verb; end
+  def bad_verb
+    bad_verb = params.permit(:verb).to_h[:verb]
+    raise Oaisys::BadVerbError.new(bad_verb: bad_verb)
+  end
 
   def identify
-    expect_no_args for_verb: :Identify
-
     respond_to do |format|
       format.xml { render :identify }
     end
   end
 
   def list_sets
-    expect_args for_verb: :ListSets, exclusive: [:resumptionToken]
+    expect_args exclusive: [:resumptionToken]
   end
 
   # TODO: Handle the identifier argument.
   def list_metadata_formats
-    expect_args for_verb: :ListMetadataFormats, optional: [:identifier]
+    parameters = expect_args optional: [:identifier]
 
     respond_to do |format|
       format.xml do
-        render :list_metadata_formats, locals: { supported_formats: SUPPORTED_FORMATS }
+        render :list_metadata_formats, locals: { supported_formats: SUPPORTED_FORMATS, parameters: parameters }
       end
     end
   end
 
   def list_records
-    expect_args for_verb: :ListRecords, required: [:metadataPrefix], optional: [:from, :until, :set],
-                exclusive: [:resumptionToken]
+    expect_args required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
   end
 
   # get_record is referring to the verb, not a getter.
   # rubocop:disable Naming/AccessorMethodName
   def get_record
-    expect_args for_verb: :GetRecord, required: [:identifier, :metadataPrefix]
+    expect_args required: [:identifier, :metadataPrefix]
   end
   # rubocop:enable Naming/AccessorMethodName
 
@@ -73,13 +73,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   private
 
-  def expect_args(for_verb:, required: [], optional: [], exclusive: [])
-    arguments = params.except('verb', 'controller', 'action').keys.map(&:to_sym)
-    expected_verb_arguments = required + optional + exclusive
-    unexpected_arguments = (arguments - expected_verb_arguments).present?
-    missing_required_arguments = (required - arguments).present?
-
-    raise Oaisys::BadArgumentError.new(for_verb: for_verb) if unexpected_arguments || missing_required_arguments
+  def expect_args(required: [], optional: [], exclusive: [])
+    params.require([:verb] + required)
+    params.permit([:verb] + required + optional + exclusive).to_h
   end
 
   def public_items_for_metadata_format(verb:, format:, restricted_to_set: nil, from_date: nil, until_date: nil)

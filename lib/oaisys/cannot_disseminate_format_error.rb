@@ -1,4 +1,4 @@
-class Oaisys::BadArgumentError < Oaisys::PMHError
+class Oaisys::CannotDisseminateFormatError < Oaisys::PMHError
 
   attr_reader :parameters
 
@@ -7,11 +7,11 @@ class Oaisys::BadArgumentError < Oaisys::PMHError
   end
 
   def error_code
-    :badArgument
+    :cannotDisseminateFormat
   end
 
   def error_message
-    I18n.t('error_messages.illegal_or_missing_arguments')
+    I18n.t('error_messages.unavailable_metadata_format')
   end
 
 end
