@@ -53,7 +53,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   # TODO: Handle resumptionToken argument.
   def list_identifiers
-    parameters = expect_args for_verb: :ListIdentifiers, required: [:metadataPrefix], optional: [:from, :until, :set],
+    parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
                              exclusive: [:resumptionToken]
 
     public_items_params = { verb: parameters[:verb], format: parameters[:metadataPrefix] }
