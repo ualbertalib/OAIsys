@@ -94,7 +94,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       missing_required_arguments = (required - arguments).present?
       parameters[:page] = parameters[:page].to_i
 
-      if unexpected_arguments || missing_required_arguments
+      if unexpected_arguments || missing_required_arguments || parameters[:page] < 2
         raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
       end
 
