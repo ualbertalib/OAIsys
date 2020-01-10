@@ -17,6 +17,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def bad_verb; end
 
   def identify
+    expect_args
+
     respond_to do |format|
       format.xml { render :identify }
     end
@@ -101,7 +103,15 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       parameters.merge(verb: params[:verb])
     else
       params.require([:verb] + required)
-      params.permit([:verb] + required + optional + exclusive).to_h
+      arguments = params.except('verb', 'controller', 'action').keys.map(&:to_sym)
+      expected_verb_arguments = required + optional
+      unexpected_arguments = (arguments - expected_verb_arguments).present?
+      missing_required_arguments = (required - arguments).present?
+      parameters = params.permit([:verb] + required + optional).to_h
+
+      return parameters unless unexpected_arguments || missing_required_arguments
+
+      raise Oaisys::BadArgumentError.new(parameters: parameters.slice(:verb))
     end
   end
 
