@@ -1,7 +1,7 @@
 # TODO: Extending off base rather than api because render wouldn't find views, look into another way to resolve this.
 class Oaisys::ApplicationController < ActionController::Base
 
-  rescue_from 'ActionController::UnpermittedParameters', 'ActionController::ParameterMissing' do
+  rescue_from 'ActionController::ParameterMissing' do
     respond_to do |format|
       format.xml do
         render :error, locals: {
