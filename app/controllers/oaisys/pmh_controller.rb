@@ -20,7 +20,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def identify
-    expect_args
+    expect_no_args
 
     respond_to do |format|
       format.xml { render :identify }
@@ -88,6 +88,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   private
+
+  # Convention for calling expect_args without any arguments.
+  def expect_no_args
+    expect_args
+  end
 
   def expect_args(required: [], optional: [], exclusive: [])
     # This makes the strong assumption that there's only one exclusive param per verb (which is the resumption token.)
