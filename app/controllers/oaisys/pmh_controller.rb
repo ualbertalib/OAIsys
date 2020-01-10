@@ -14,7 +14,10 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       metadataNamespace: 'http://www.w3.org/2005/Atom' }
   ].freeze
 
-  def bad_verb; end
+  def bad_verb
+    bad_verb = params.permit(:verb).to_h[:verb]
+    raise Oaisys::BadVerbError.new(bad_verb: bad_verb)
+  end
 
   def identify
     expect_args
@@ -50,6 +53,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
   # rubocop:enable Naming/AccessorMethodName
 
+  # TODO: Handle from, until, and resumptionToken arguments.
   def list_identifiers
     parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
                              exclusive: [:resumptionToken]

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ExpectArgsTest < ActionDispatch::IntegrationTest
+class BadVerbTest < ActionDispatch::IntegrationTest
 
   include Oaisys::Engine.routes.url_helpers
 
@@ -8,8 +8,8 @@ class ExpectArgsTest < ActionDispatch::IntegrationTest
     @routes = Oaisys::Engine.routes
   end
 
-  def test_unexpected_arg_xml
-    get oaisys_path(verb: 'ListMetadataFormats', nastyParam: 'nasty'), headers: { 'Accept' => 'application/xml' }
+  def test_bad_verb_xml
+    get oaisys_path(verb: 'nastyVerb'), headers: { 'Accept' => 'application/xml' }
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
@@ -19,13 +19,12 @@ class ExpectArgsTest < ActionDispatch::IntegrationTest
     assert_select 'OAI-PMH' do
       assert_select 'responseDate'
       assert_select 'request'
-      assert_select 'error', I18n.t('error_messages.illegal_or_missing_arguments')
+      assert_select 'error', I18n.t('error_messages.unknown_verb', bad_verb: 'nastyVerb')
     end
   end
 
-  def test_missing_required_arg_xml
-    # Missing required metadataPrefix param
-    get oaisys_path(verb: 'ListRecords'), headers: { 'Accept' => 'application/xml' }
+  def test_no_verb_xml
+    get oaisys_path, headers: { 'Accept' => 'application/xml' }
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
@@ -35,7 +34,7 @@ class ExpectArgsTest < ActionDispatch::IntegrationTest
     assert_select 'OAI-PMH' do
       assert_select 'responseDate'
       assert_select 'request'
-      assert_select 'error', I18n.t('error_messages.illegal_or_missing_arguments')
+      assert_select 'error', I18n.t('error_messages.no_verb')
     end
   end
 
