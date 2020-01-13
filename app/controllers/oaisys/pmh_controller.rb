@@ -38,7 +38,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
 
-    communities = Oaisys::Engine.config.community_model.pluck(:id, :title)
+    communities = Oaisys::Engine.config.top_level_sets_model.pluck(:id, :title)
     sets = sets_model.pluck(:community_id, :id, :title)
 
     sets.map! do |community_id, id, title|
