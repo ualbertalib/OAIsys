@@ -38,11 +38,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
 
-    communities = Oaisys::Engine.config.top_level_sets_model.pluck(:id, :title)
+    top_level_sets = Oaisys::Engine.config.top_level_sets_model.pluck(:id, :title)
     sets = sets_model.pluck(:community_id, :id, :title)
 
-    sets.map! do |community_id, id, title|
-      [community_id + ':' + id, communities.find { |a| a[0] == community_id }[1] + ' / ' + title]
+    sets.map! do |top_level_sets_id, id, title|
+      [top_level_sets_id + ':' + id, top_level_sets.find { |a| a[0] == top_level_sets_id }[1] + ' / ' + title]
     end
     resumption_token = resumption_token_from_params(parameters: parameters)
     parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
