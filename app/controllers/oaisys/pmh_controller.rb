@@ -28,7 +28,33 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def list_sets
-    expect_args exclusive: [:resumptionToken]
+    parameters = expect_args exclusive: [:resumptionToken]
+
+    resumption_token_provided = parameters[:page].present?
+    parameters[:page] = 1 if parameters[:page].blank?
+    sets_model, total_count, cursor = sets_on_page(page: parameters[:page])
+
+    if sets_model.out_of_range? && resumption_token_provided
+      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+    end
+
+    communities = Oaisys::Engine.config.community_model.pluck(:id, :title)
+    sets = sets_model.pluck(:community_id, :id, :title)
+
+    sets.map! do |community_id, id, title|
+      [community_id + ':' + id, communities.find { |a| a[0] == community_id }[1] + ' / ' + title]
+    end
+    resumption_token = resumption_token_from_params(parameters: parameters)
+    parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
+
+    respond_to do |format|
+      format.xml do
+        render :list_sets, locals: { sets: sets, parameters: parameters.except(:page),
+                                     cursor: cursor, complete_list_size: total_count,
+                                     resumption_token: resumption_token, last_page: sets_model.last_page?,
+                                     resumption_token_provided: resumption_token_provided }
+      end
+    end
   end
 
   # TODO: Handle the identifier argument.
@@ -139,6 +165,15 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model = model.created_on_or_before(until_date) if until_date.present?
 
     items_per_request = Oaisys::Engine.config.items_per_request
+    model = model.page(page).per(items_per_request)
+    cursor = (page - 1) * items_per_request
+    [model, model.total_count, cursor]
+  end
+
+  def sets_on_page(page:)
+    items_per_request = Oaisys::Engine.config.items_per_request
+    model = Oaisys::Engine.config.set_model
+
     model = model.page(page).per(items_per_request)
     cursor = (page - 1) * items_per_request
     [model, model.total_count, cursor]
