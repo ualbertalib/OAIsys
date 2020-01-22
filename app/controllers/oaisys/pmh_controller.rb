@@ -30,11 +30,18 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def list_sets
     parameters = expect_args exclusive: [:resumptionToken]
 
-    resumption_token_provided = parameters[:page].present?
+    resumption_token_provided = parameters[:resumptionToken].present?
     parameters[:page] = 1 if parameters[:page].blank?
     sets_model, total_count, cursor = sets_on_page(page: parameters[:page])
 
+    parameters[:item_count] = total_count if parameters[:item_count].nil?
     if sets_model.out_of_range? && resumption_token_provided
+      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+    end
+
+    # Results have changed, expire token
+    if resumption_token_provided && (parameters[:item_count] != total_count)
+      expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
 
@@ -50,7 +57,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     respond_to do |format|
       format.xml do
-        render :list_sets, locals: { sets: sets, parameters: parameters.except(:page),
+        render :list_sets, locals: { sets: sets, parameters: parameters.except(:page, :item_count),
                                      cursor: cursor, complete_list_size: total_count,
                                      resumption_token: resumption_token, last_page: sets_model.last_page?,
                                      resumption_token_provided: resumption_token_provided }
@@ -85,7 +92,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
                              exclusive: [:resumptionToken]
 
-    resumption_token_provided = parameters[:page].present?
+    resumption_token_provided = parameters[:resumptionToken].present?
     parameters[:page] = 1 if parameters[:page].blank?
 
     public_items_params = { verb: parameters[:verb], format: parameters[:metadataPrefix],
@@ -96,17 +103,24 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     identifiers_model, total_count, cursor = public_items_for_metadata_format(public_items_params)
     identifiers = identifiers_model.pluck(:id, :record_created_at, :member_of_paths)
+    parameters[:item_count] = total_count if parameters[:item_count].nil?
 
     if identifiers_model.out_of_range? && resumption_token_provided
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
     raise Oaisys::NoRecordsMatchError.new(parameters: parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
+    # Results have changed, expire token
+    if resumption_token_provided && (parameters[:item_count] != total_count)
+      expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
+      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+    end
+
     resumption_token = resumption_token_from_params(parameters: parameters)
     parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
     respond_to do |format|
       format.xml do
-        render :list_identifiers, locals: { identifiers: identifiers, parameters: parameters.except(:page),
+        render :list_identifiers, locals: { identifiers: identifiers, parameters: parameters.except(:page, :item_count),
                                             cursor: cursor, complete_list_size: total_count,
                                             resumption_token: resumption_token, last_page: identifiers_model.last_page?,
                                             resumption_token_provided: resumption_token_provided }
@@ -125,18 +139,23 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     # This makes the strong assumption that there's only one exclusive param per verb (which is the resumption token.)
     if params.key?(exclusive.first)
       params.require([:verb])
-      parameters = params_from_resumption_token(resumption_token: params[exclusive.first])
+      parameters = params_from_resumption_token(resumption_token: params[exclusive.first], verb: params[:verb])
+
+      # Token doesn't exist in Redis.
+      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid') if parameters.nil?
+
       arguments = parameters.keys
-      expected_verb_arguments = [:page] + required + optional + exclusive
+      expected_verb_arguments = [:page, :item_count] + required + optional + exclusive
       unexpected_arguments = (arguments - expected_verb_arguments).present?
       missing_required_arguments = (required - arguments).present?
+      parameters[:item_count] = parameters[:item_count].to_i
       parameters[:page] = parameters[:page].to_i
-
+      parameters[:resumptionToken] = parameters[:page].to_i
       if unexpected_arguments || missing_required_arguments || parameters[:page] < 2
         raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
       end
 
-      parameters.merge(verb: params[:verb])
+      parameters.merge(verb: params[:verb], resumptionToken: params[:resumptionToken])
     else
       params.require([:verb] + required)
       arguments = params.except('verb', 'controller', 'action').keys.map(&:to_sym)
@@ -180,13 +199,28 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     [model, model.total_count, cursor]
   end
 
-  def resumption_token_from_params(parameters:)
-    parameters[:page] = parameters[:page] + 1
-    CGI.escape(parameters.except(:verb).to_query)
+  def expire_token(resumption_token:, verb:)
+    Oaisys::Engine.config.redis.expire_token(resumption_token: resumption_token, verb: verb,
+                                             identifier: user_identifier)
   end
 
-  def params_from_resumption_token(resumption_token:)
-    Rack::Utils.parse_query(CGI.unescape(resumption_token)).symbolize_keys
+  def resumption_token_from_params(parameters:)
+    parameters[:page] = parameters[:page] + 1
+    Oaisys::Engine.config.redis.create_token(parameters: parameters.except(:verb, :resumptionToken),
+                                             verb: parameters[:verb], identifier: user_identifier)
+  end
+
+  def params_from_resumption_token(resumption_token:, verb:)
+    Oaisys::Engine.config.redis.get_parameters(resumption_token: resumption_token, verb: verb,
+                                               identifier: user_identifier)
+  end
+
+  def user_identifier
+    user_agent = request.user_agent
+
+    return request.remote_ip if user_agent.blank?
+
+    user_agent
   end
 
 end
