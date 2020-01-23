@@ -87,7 +87,6 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
   # rubocop:enable Naming/AccessorMethodName
 
-  # TODO: Handle from, until, and resumptionToken arguments.
   def list_identifiers
     parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
                              exclusive: [:resumptionToken]
@@ -102,7 +101,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     public_items_params = public_items_params.merge(until_date: parameters[:until]) if parameters[:until].present?
 
     identifiers_model, total_count, cursor = public_items_for_metadata_format(public_items_params)
-    identifiers = identifiers_model.pluck(:id, :record_created_at, :member_of_paths)
+    identifiers = identifiers_model.pluck(:id, :updated_at, :member_of_paths)
     parameters[:item_count] = total_count if parameters[:item_count].nil?
 
     if identifiers_model.out_of_range? && resumption_token_provided
@@ -181,8 +180,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
             end
     model = model.public_items
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
-    model = model.created_on_or_after(from_date) if from_date.present?
-    model = model.created_on_or_before(until_date) if until_date.present?
+    model = model.updated_on_or_after(from_date) if from_date.present?
+    model = model.updated_on_or_before(until_date) if until_date.present?
 
     items_per_request = Oaisys::Engine.config.items_per_request
     model = model.page(page).per(items_per_request)
