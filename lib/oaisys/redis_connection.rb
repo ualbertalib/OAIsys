@@ -2,6 +2,9 @@ require 'nanoid'
 
 class Oaisys::RedisConnection
 
+  NANOID_TOKEN_ALPHABBET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.freeze
+  NANOID_TOKEN_SIZE = 22
+
   class ConnectionError < StandardError; end
 
   def initialize(redis_url: Oaisys::Engine.config.redis_url)
@@ -12,19 +15,17 @@ class Oaisys::RedisConnection
   def create_token(parameters:, verb:, identifier:)
     raise ConnectionError unless connected?
 
-    resumption_token = Nanoid.generate(size: 22,
-                                       alphabet: '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
-    redis_key = 'oaisys' + '.' + identifier + '.' + verb + '.' + resumption_token
+    resumption_token = Nanoid.generate(size: NANOID_TOKEN_SIZE, alphabet: NANOID_TOKEN_ALPHABBET)
+    redis_key = "oaisys.#{identifier}.#{verb}.#{resumption_token}"
     @redis.set redis_key, parameters.to_json
-    # Set to expire in 72 hours.
-    @redis.expire(redis_key, 259_200)
+    @redis.expire(redis_key, 72.hours)
     resumption_token
   end
 
   def get_parameters(resumption_token:, verb:, identifier:)
     raise ConnectionError unless connected?
 
-    redis_key = 'oaisys' + '.' + identifier + '.' + verb + '.' + resumption_token
+    redis_key = "oaisys.#{identifier}.#{verb}.#{resumption_token}"
     json_parameters = @redis.get(redis_key)
     return JSON.parse(json_parameters).symbolize_keys unless json_parameters.nil?
 
@@ -34,7 +35,7 @@ class Oaisys::RedisConnection
   def expire_token(resumption_token:, verb:, identifier:)
     raise ConnectionError unless connected?
 
-    redis_key = 'oaisys' + '.' + identifier + '.' + verb + '.' + resumption_token
+    redis_key = "oaisys.#{identifier}.#{verb}.#{resumption_token}"
     @redis.expire(redis_key, 0)
   end
 
