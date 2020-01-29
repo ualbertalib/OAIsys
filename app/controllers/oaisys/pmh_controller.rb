@@ -42,8 +42,10 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     sets = sets_model.pluck(:community_id, :id, :title, :description)
 
     sets.map! do |top_level_sets_id, id, title, description|
-      [top_level_sets_id + ':' + id, top_level_sets.find { |a| a[0] == top_level_sets_id }[1] + ' / ' + title,
-       description]
+      top_level_set = top_level_sets.find { |a| a[0] == top_level_sets_id }[1]
+      full_set_id = top_level_sets_id + ':' + id
+      full_set_name = top_level_set + ' / ' + title
+      [full_set_id, full_set_name, description]
     end
     resumption_token = resumption_token_from_params(parameters: parameters)
     parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided

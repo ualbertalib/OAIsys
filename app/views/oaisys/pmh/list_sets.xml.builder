@@ -21,10 +21,10 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
 
 xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 xml.ListSets do
-  sets.each do |top_level_sets_id_and_id, title, description|
+  sets.each do |full_set_id, full_set_name, description|
     xml.tag!('set') do
-      xml.setSpec top_level_sets_id_and_id
-      xml.setName title
+      xml.setSpec full_set_id
+      xml.setName full_set_name
       set_description(xml: xml, description: description)
     end
   end
