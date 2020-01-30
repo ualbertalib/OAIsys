@@ -18,7 +18,7 @@ class Oaisys::RedisConnection
     resumption_token = Nanoid.generate(size: NANOID_TOKEN_SIZE, alphabet: NANOID_TOKEN_ALPHABBET)
     redis_key = "oaisys.#{identifier}.#{verb}.#{resumption_token}"
     @redis.set redis_key, parameters.to_json
-    @redis.expire(redis_key, 72.hours)
+    @redis.expire(redis_key, Oaisys::Engine.config.resumption_token_expiry)
     resumption_token
   end
 
@@ -36,7 +36,7 @@ class Oaisys::RedisConnection
     raise ConnectionError unless connected?
 
     redis_key = "oaisys.#{identifier}.#{verb}.#{resumption_token}"
-    @redis.expire(redis_key, 0)
+    @redis.del(redis_key)
   end
 
   protected
