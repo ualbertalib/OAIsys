@@ -47,7 +47,17 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   # get_record is referring to the verb, not a getter.
   # rubocop:disable Naming/AccessorMethodName
   def get_record
-    expect_args required: [:identifier, :metadataPrefix]
+    params = expect_args required: [:identifier, :metadataPrefix]
+
+    metadata_format = params[:metadataPrefix]
+    # TODO: grab record model by looking up prefix...
+    item = Item.find(params[:identifier])
+
+    respond_to do |format|
+      format.xml do
+        render :get_record, locals: {item: item, metadata_format: metadata_format}
+      end
+    end
   end
   # rubocop:enable Naming/AccessorMethodName
 
