@@ -50,12 +50,14 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     params = expect_args required: [:identifier, :metadataPrefix]
 
     metadata_format = params[:metadataPrefix]
-    # TODO: grab record model by looking up prefix...
-    item = Item.find(params[:identifier])
+    model = model_for_verb_format(verb: :get_record, format: metadata_format)
+    obj = model.find(params[:identifier])
+
+    raise IdDoesNotExistError.new(paramerters: params) if obj.blank?
 
     respond_to do |format|
       format.xml do
-        render :get_record, locals: {item: item, metadata_format: metadata_format}
+        render :get_record, locals: { item: obj, metadata_format: metadata_format }
       end
     end
   end
@@ -88,16 +90,15 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     params.permit([:verb] + required + optional + exclusive).to_h
   end
 
-  def public_items_for_metadata_format(verb:, format:, restricted_to_set: nil)
-    model = case format
-            when 'oai_dc'
-              Oaisys::Engine.config.oai_dc_model
-            when 'oai_etdms'
-              Oaisys::Engine.config.oai_etdms_model
-            else
-              raise Oaisys::CannotDisseminateFormatError.new(parameters: { verb: verb, metadataPrefix: format })
-            end
+  def model_for_verb_format(verb:, format:)
+    model = ActsAsRdfable.known_classes_for(format: format).first
+    raise Oaisys::CannotDisseminateError.new(parameters: { verb: verb, metadataPrefix: format }) if model.blank?
 
+    model
+  end
+
+  def public_items_for_metadata_format(verb:, format:, restricted_to_set: nil)
+    model = model_for_verb_format(verb: verb, format: format)
     !restricted_to_set.nil? ? model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) : model.public_items
   end
 

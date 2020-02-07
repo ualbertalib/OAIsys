@@ -1,4 +1,3 @@
-
 class Oaisys::Engine < ::Rails::Engine
 
   isolate_namespace Oaisys
