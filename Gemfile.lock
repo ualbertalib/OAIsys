@@ -21,7 +21,7 @@ PATH
     oaisys (0.1.0)
       builder (~> 3.0)
       pg
-      rails (~> 5.2.3)
+      rails (>= 5.2.3)
       rubocop
       rubocop-performance
       rubocop-rails

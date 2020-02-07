@@ -139,6 +139,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def model_for_verb_format(verb:, format:)
     model = ActsAsRdfable.known_classes_for(format: format).first
     raise Oaisys::CannotDisseminateError.new(parameters: { verb: verb, metadataPrefix: format }) if model.blank?
+
     model
   end
 
