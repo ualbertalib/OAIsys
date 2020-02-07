@@ -1,8 +1,9 @@
 en:
   error_messages:
     illegal_or_missing_arguments: 'The request includes illegal arguments or is missing required arguments.'
-    unknown_verb: "Unknown verb '%{bad_verb}'"
-    no_verb: 'Verb is required'
-    unavailable_metadata_format: 'Unavailable metadata format'
     no_record_found: 'No record found'
+    no_verb: 'Verb is required'
+    resumption_token_invalid: 'Resumption token is invalid'
+    unavailable_metadata_format: 'Unavailable metadata format'
+    unknown_verb: "Unknown verb '%{bad_verb}'"
     id_does_not_exist: 'No matching identifier'
