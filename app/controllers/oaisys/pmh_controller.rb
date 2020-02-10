@@ -43,7 +43,35 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def list_records
-    expect_args required: [:metadataPrefix], optional: [:from, :until, :set], exclusive: [:resumptionToken]
+    params = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
+                         exclusive: [:resumptionToken]
+
+    # Note the order here is critical: check whether or not we retrieved a page based on a resumption token
+    # haven't been handed to the API, and if we were not, start the results on page 1
+    resumption_token_provided = params[:page].present?
+    params[:page] = 1 if params[:page].blank?
+
+    query_params = query_params_from_api_params(params)
+
+    items, total_count, cursor = public_items_for_metadata_format(**query_params)
+
+    if items.out_of_range? && resumption_token_provided
+      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+    end
+    raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if items.empty?
+
+    resumption_token = resumption_token_from_params(parameters: params)
+    params = params.slice(:verb, :resumptionToken) if resumption_token_provided
+
+    respond_to do |format|
+      format.xml do
+        render :list_records, locals: { items: items, parameters: params.except(:page),
+                                        metadata_format: params[:metadataPrefix],
+                                        cursor: cursor, complete_list_size: total_count,
+                                        resumption_token: resumption_token, last_page: items.last_page?,
+                                        resumption_token_provided: resumption_token_provided }
+      end
+    end
   end
 
   # get_record is referring to the verb, not a getter.
@@ -63,35 +91,34 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       end
     end
   end
-  # rubocop:enable Naming/AccessorMethodName
+  # rubocop:enable Naming/AccessorMethodName]
 
   # TODO: Handle from, until, and resumptionToken arguments.
   def list_identifiers
-    parameters = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
-                             exclusive: [:resumptionToken]
+    params = expect_args required: [:metadataPrefix], optional: [:from, :until, :set],
+                         exclusive: [:resumptionToken]
 
-    resumption_token_provided = parameters[:page].present?
-    parameters[:page] = 1 if parameters[:page].blank?
+    # Note the order here is critical: check whether or not we retrieved a page based on a resumption token
+    # haven been handed to the API, and if we were not, start the results on page 1
+    resumption_token_provided = params[:page].present?
+    params[:page] = 1 if params[:page].blank?
 
-    public_items_params = { verb: parameters[:verb], format: parameters[:metadataPrefix],
-                            page: parameters[:page] }
-    public_items_params = public_items_params.merge(restricted_to_set: parameters[:set]) if parameters[:set].present?
-    public_items_params = public_items_params.merge(from_date: parameters[:from]) if parameters[:from].present?
-    public_items_params = public_items_params.merge(until_date: parameters[:until]) if parameters[:until].present?
+    query_params = query_params_from_api_params(params)
 
-    identifiers_model, total_count, cursor = public_items_for_metadata_format(public_items_params)
+    identifiers_model, total_count, cursor = public_items_for_metadata_format(**query_params)
     identifiers = identifiers_model.pluck(:id, :record_created_at, :member_of_paths)
 
     if identifiers_model.out_of_range? && resumption_token_provided
       raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
     end
-    raise Oaisys::NoRecordsMatchError.new(parameters: parameters.slice(:verb, :metadataPrefix)) if identifiers.empty?
+    raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
-    resumption_token = resumption_token_from_params(parameters: parameters)
-    parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
+    resumption_token = resumption_token_from_params(parameters: params)
+    params = params.slice(:verb, :resumptionToken) if resumption_token_provided
+
     respond_to do |format|
       format.xml do
-        render :list_identifiers, locals: { identifiers: identifiers, parameters: parameters.except(:page),
+        render :list_identifiers, locals: { identifiers: identifiers, parameters: params.except(:page),
                                             cursor: cursor, complete_list_size: total_count,
                                             resumption_token: resumption_token, last_page: identifiers_model.last_page?,
                                             resumption_token_provided: resumption_token_provided }
@@ -143,13 +170,23 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model
   end
 
+  def query_params_from_api_params(params)
+    {}.tap do |query_params|
+      query_params[:verb] = params[:verb]
+      query_params[:format] = params[:metadataPrefix]
+      query_params[:page] = params[:page]
+      query_params[:restricted_to_set] = params[:set] if params[:set].present?
+      query_params[:from_date] = params[:from] if params[:from].present?
+      query_params[:until_date] = params[:until] if params[:until].present?
+    end
+  end
+
   def public_items_for_metadata_format(verb:, format:, page:, restricted_to_set: nil, from_date: nil, until_date: nil)
     model = model_for_verb_format(verb: verb, format: format)
     model = model.public_items
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
     model = model.created_on_or_after(from_date) if from_date.present?
     model = model.created_on_or_before(until_date) if until_date.present?
-
     items_per_request = Oaisys::Engine.config.items_per_request
     model = model.page(page).per(items_per_request)
     cursor = (page - 1) * items_per_request
