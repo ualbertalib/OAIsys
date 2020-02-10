@@ -49,7 +49,19 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   # get_record is referring to the verb, not a getter.
   # rubocop:disable Naming/AccessorMethodName
   def get_record
-    expect_args required: [:identifier, :metadataPrefix]
+    params = expect_args required: [:identifier, :metadataPrefix]
+
+    metadata_format = params[:metadataPrefix]
+    model = model_for_verb_format(verb: :get_record, format: metadata_format)
+    obj = model.find(params[:identifier])
+
+    raise IdDoesNotExistError.new(paramerters: params) if obj.blank?
+
+    respond_to do |format|
+      format.xml do
+        render :get_record, locals: { item: obj, metadata_format: metadata_format }
+      end
+    end
   end
   # rubocop:enable Naming/AccessorMethodName
 
@@ -124,15 +136,15 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     end
   end
 
+  def model_for_verb_format(verb:, format:)
+    model = ActsAsRdfable.known_classes_for(format: format).first
+    raise Oaisys::CannotDisseminateError.new(parameters: { verb: verb, metadataPrefix: format }) if model.blank?
+
+    model
+  end
+
   def public_items_for_metadata_format(verb:, format:, page:, restricted_to_set: nil, from_date: nil, until_date: nil)
-    model = case format
-            when 'oai_dc'
-              Oaisys::Engine.config.oai_dc_model
-            when 'oai_etdms'
-              Oaisys::Engine.config.oai_etdms_model
-            else
-              raise Oaisys::CannotDisseminateFormatError.new(parameters: { verb: verb, metadataPrefix: format })
-            end
+    model = model_for_verb_format(verb: verb, format: format)
     model = model.public_items
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
     model = model.created_on_or_after(from_date) if from_date.present?

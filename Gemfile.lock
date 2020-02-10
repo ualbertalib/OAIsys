@@ -1,10 +1,10 @@
 GIT
   remote: https://github.com/mbarnett/acts_as_rdfable.git
-  revision: d1d3b79cab1f074976407e42f9e28d24de5131c8
-  tag: v0.01
+  revision: 5914f26eba2238f62044bdd3776e1961a8422bd7
+  ref: 5914f26eba2238f62044bdd3776e1961a8422bd7
   specs:
-    acts_as_rdfable (0.1.0)
-      rails (~> 5.2.3)
+    acts_as_rdfable (0.2.1)
+      rails (>= 5.2.3)
 
 GIT
   remote: https://github.com/ualbertalib/builder_deferred_tagging.git
@@ -21,7 +21,7 @@ PATH
     oaisys (0.1.0)
       builder (~> 3.0)
       pg
-      rails (~> 5.2.3)
+      rails (>= 5.2.3)
       rubocop
       rubocop-performance
       rubocop-rails
@@ -174,4 +174,4 @@ DEPENDENCIES
   pry
 
 BUNDLED WITH
-   2.0.2
+   2.1.4
