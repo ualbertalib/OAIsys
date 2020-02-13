@@ -99,7 +99,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
                          exclusive: [:resumptionToken]
 
     # Note the order here is critical: check whether or not we retrieved a page based on a resumption token
-    # haven been handed to the API, and if we were not, start the results on page 1
+    # haven't been handed to the API, and if we were not, start the results on page 1
     resumption_token_provided = params[:page].present?
     params[:page] = 1 if params[:page].blank?
 
