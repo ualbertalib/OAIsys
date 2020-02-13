@@ -91,7 +91,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       end
     end
   end
-  # rubocop:enable Naming/AccessorMethodName]
+  # rubocop:enable Naming/AccessorMethodName
 
   # TODO: Handle from, until, and resumptionToken arguments.
   def list_identifiers
