@@ -199,22 +199,20 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def expire_token(resumption_token:, verb:)
-    Oaisys::Engine.config.redis.expire_token(resumption_token: resumption_token, verb: verb,
-                                             identifier: user_identifier)
+    Oaisys::Engine.config.redis.expire_token(resumption_token: resumption_token, verb: verb, identifier: user_agent)
   end
 
   def resumption_token_from_params(parameters:)
     parameters[:page] = parameters[:page] + 1
     Oaisys::Engine.config.redis.create_token(parameters: parameters.except(:verb, :resumptionToken),
-                                             verb: parameters[:verb], identifier: user_identifier)
+                                             verb: parameters[:verb], identifier: user_agent)
   end
 
   def params_from_resumption_token(resumption_token:, verb:)
-    Oaisys::Engine.config.redis.get_parameters(resumption_token: resumption_token, verb: verb,
-                                               identifier: user_identifier)
+    Oaisys::Engine.config.redis.get_parameters(resumption_token: resumption_token, verb: verb, identifier: user_agent)
   end
 
-  def user_identifier
+  def user_agent
     user_agent = request.user_agent
 
     return request.remote_ip if user_agent.blank?
