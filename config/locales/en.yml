@@ -6,3 +6,4 @@ en:
     resumption_token_invalid: 'Resumption token is invalid'
     unavailable_metadata_format: 'Unavailable metadata format'
     unknown_verb: "Unknown verb '%{bad_verb}'"
+    id_does_not_exist: 'No matching identifier'

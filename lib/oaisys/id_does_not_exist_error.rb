@@ -1,4 +1,4 @@
-class Oaisys::CannotDisseminateError < Oaisys::PMHError
+class Oaisys::IdDoesNotExist < Oaisys::PMHError
 
   attr_reader :parameters
 
@@ -7,11 +7,11 @@ class Oaisys::CannotDisseminateError < Oaisys::PMHError
   end
 
   def error_code
-    :cannotDisseminateFormat
+    :idDoesNotExist
   end
 
   def error_message
-    I18n.t('error_messages.unavailable_metadata_format')
+    I18n.t('error_messages.id_does_not_exist')
   end
 
 end
