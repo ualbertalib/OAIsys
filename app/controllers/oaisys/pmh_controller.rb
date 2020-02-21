@@ -35,15 +35,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     sets_model, total_count, cursor = sets_on_page(page: parameters[:page])
 
     parameters[:item_count] = total_count if parameters[:item_count].nil?
-    if sets_model.out_of_range? && resumption_token_provided
-      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
-    end
 
-    # Results have changed, expire token
-    if resumption_token_provided && (parameters[:item_count] != total_count)
-      expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
-      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
-    end
+    check_resumption_token(sets_model, resumption_token_provided, total_count, parameters)
 
     top_level_sets = Oaisys::Engine.config.top_level_sets_model.pluck(:id, :title)
     sets = sets_model.pluck(:community_id, :id, :title, :description)
@@ -90,19 +83,20 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     query_params = query_params_from_api_params(params)
 
     items, total_count, cursor = public_items_for_metadata_format(**query_params)
+    params[:item_count] = total_count if params[:item_count].nil?
 
-    if items.out_of_range? && resumption_token_provided
-      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
-    end
     raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if items.empty?
 
+    check_resumption_token(items, resumption_token_provided, total_count, params)
+
     resumption_token = resumption_token_from_params(parameters: params)
+    metadata_format = params[:metadataPrefix]
     params = params.slice(:verb, :resumptionToken) if resumption_token_provided
 
     respond_to do |format|
       format.xml do
-        render :list_records, locals: { items: items, parameters: params.except(:page),
-                                        metadata_format: params[:metadataPrefix],
+        render :list_records, locals: { items: items, parameters: params.except(:page, :item_count),
+                                        metadata_format: metadata_format,
                                         cursor: cursor, complete_list_size: total_count,
                                         resumption_token: resumption_token, last_page: items.last_page?,
                                         resumption_token_provided: resumption_token_provided }
@@ -144,18 +138,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     identifiers = identifiers_model.pluck(:id, :updated_at, :member_of_paths)
     params[:item_count] = total_count if params[:item_count].nil?
 
-    if identifiers_model.out_of_range? && resumption_token_provided
-      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
-    end
     raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if identifiers.empty?
 
-    params = params.slice(:verb, :resumptionToken) if resumption_token_provided
-
-    # Results have changed, expire token
-    if resumption_token_provided && (parameters[:item_count] != total_count)
-      expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
-      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
-    end
+    check_resumption_token(identifiers_model, resumption_token_provided, total_count, params)
 
     resumption_token = resumption_token_from_params(parameters: params)
     params = params.slice(:verb, :resumptionToken) if resumption_token_provided
@@ -272,6 +257,18 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     return request.remote_ip if user_agent.blank?
 
     user_agent
+  end
+
+  def check_resumption_token(model, resumption_token_provided, total_count, parameters)
+    if model.out_of_range? && resumption_token_provided
+      raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+    end
+
+    return unless resumption_token_provided && (parameters[:item_count] != total_count)
+
+    # Results have changed, expire token
+    expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
+    raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
   end
 
 end

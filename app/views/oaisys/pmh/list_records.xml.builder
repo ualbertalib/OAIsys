@@ -34,4 +34,8 @@ xml.ListRecords do |list_records|
       end
     end
   end
+
+  resumption_token(xml_object: list_records, complete_list_size: complete_list_size, cursor: cursor,
+                   resumption_token: resumption_token, last_page: last_page,
+                   resumption_token_provided: resumption_token_provided)
 end
