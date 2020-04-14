@@ -1,6 +1,6 @@
 module Oaisys::SetDescriptionHelper
   def set_description(xml:, description:)
-    return if description.empty?
+    return if description.blank?
 
     xml.setDescription do
       xml.tag!('oai_dc:dc', 'xmlns:oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/',

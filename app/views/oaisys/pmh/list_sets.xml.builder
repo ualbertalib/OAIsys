@@ -23,7 +23,7 @@ xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 xml.ListSets do
   sets.each do |full_set_id, full_set_name, description|
     xml.tag!('set') do
-      xml.setSpec full_set_id
+      set_id(xml: xml, id: full_set_id)
       xml.setName full_set_name
       set_description(xml: xml, description: description)
     end
