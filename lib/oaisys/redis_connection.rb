@@ -9,7 +9,6 @@ class Oaisys::RedisConnection
 
   def initialize(redis_url: Oaisys::Engine.config.redis_url)
     @redis = Redis.new(url: redis_url)
-    raise ConnectionError unless connected?
   end
 
   def create_token(parameters:, verb:, identifier:)
