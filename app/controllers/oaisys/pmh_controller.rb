@@ -184,11 +184,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       parameters.merge(verb: params[:verb], resumptionToken: params[:resumptionToken])
     else
       params.require([:verb] + required)
-      arguments = params.except('verb', 'controller', 'action').keys.map(&:to_sym)
+      arguments = params.except('verb', 'controller', 'action', 'subdomain').keys.map(&:to_sym)
       expected_verb_arguments = required + optional
       unexpected_arguments = (arguments - expected_verb_arguments).present?
       missing_required_arguments = (required - arguments).present?
-      parameters = params.permit([:verb] + required + optional).to_h
+      parameters = params.permit([:verb, :subdomain] + required + optional).except(:subdomain).to_h
 
       return parameters unless unexpected_arguments || missing_required_arguments
 
