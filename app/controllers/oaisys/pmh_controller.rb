@@ -22,9 +22,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def identify
     expect_no_args
 
-    respond_to do |format|
-      format.xml { render :identify }
-    end
+    render :identify, formats: :xml
   end
 
   def list_sets
@@ -50,25 +48,18 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     resumption_token = resumption_token_from_params(parameters: parameters)
     parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
 
-    respond_to do |format|
-      format.xml do
-        render :list_sets, locals: { sets: sets, parameters: parameters.except(:page, :item_count),
-                                     cursor: cursor, complete_list_size: total_count,
-                                     resumption_token: resumption_token, last_page: sets_model.last_page?,
-                                     resumption_token_provided: resumption_token_provided }
-      end
-    end
+    render :list_sets, formats: :xml, locals: { sets: sets, parameters: parameters.except(:page, :item_count),
+                                                cursor: cursor, complete_list_size: total_count,
+                                                resumption_token: resumption_token, last_page: sets_model.last_page?,
+                                                resumption_token_provided: resumption_token_provided }
   end
 
   # TODO: Handle the identifier argument.
   def list_metadata_formats
     parameters = expect_args optional: [:identifier]
 
-    respond_to do |format|
-      format.xml do
-        render :list_metadata_formats, locals: { supported_formats: SUPPORTED_FORMATS, parameters: parameters }
-      end
-    end
+    render :list_metadata_formats,
+           formats: :xml, locals: { supported_formats: SUPPORTED_FORMATS, parameters: parameters }
   end
 
   def list_records
@@ -93,15 +84,12 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     metadata_format = params[:metadataPrefix]
     params = params.slice(:verb, :resumptionToken) if resumption_token_provided
 
-    respond_to do |format|
-      format.xml do
-        render :list_records, locals: { items: items, parameters: params.except(:page, :item_count),
-                                        metadata_format: metadata_format,
-                                        cursor: cursor, complete_list_size: total_count,
-                                        resumption_token: resumption_token, last_page: items.last_page?,
-                                        resumption_token_provided: resumption_token_provided }
-      end
-    end
+    render :list_records,
+           formats: :xml, locals: { items: items, parameters: params.except(:page, :item_count),
+                                    metadata_format: metadata_format,
+                                    cursor: cursor, complete_list_size: total_count,
+                                    resumption_token: resumption_token, last_page: items.last_page?,
+                                    resumption_token_provided: resumption_token_provided }
   end
 
   # get_record is referring to the verb, not a getter.
@@ -115,11 +103,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     raise IdDoesNotExistError.new(paramerters: params) if obj.blank?
 
-    respond_to do |format|
-      format.xml do
-        render :get_record, locals: { item: obj, metadata_format: metadata_format }
-      end
-    end
+    render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format }
   end
   # rubocop:enable Naming/AccessorMethodName
 
@@ -144,14 +128,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     resumption_token = resumption_token_from_params(parameters: params)
     params = params.slice(:verb, :resumptionToken) if resumption_token_provided
-    respond_to do |format|
-      format.xml do
-        render :list_identifiers, locals: { identifiers: identifiers, parameters: params.except(:page, :item_count),
-                                            cursor: cursor, complete_list_size: total_count,
-                                            resumption_token: resumption_token, last_page: identifiers_model.last_page?,
-                                            resumption_token_provided: resumption_token_provided }
-      end
-    end
+    render :list_identifiers,
+           formats: :xml, locals: { identifiers: identifiers, parameters: params.except(:page, :item_count),
+                                    cursor: cursor, complete_list_size: total_count,
+                                    resumption_token: resumption_token, last_page: identifiers_model.last_page?,
+                                    resumption_token_provided: resumption_token_provided }
   end
 
   private
