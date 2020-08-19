@@ -15,5 +15,5 @@ gemspec
 # gem 'byebug', group: [:development, :test]
 
 # RDF stuff
-gem 'acts_as_rdfable', github: 'ualbertalib/acts_as_rdfable', ref: '37915a9581713524f95f28425a10fdfee4335d06'
+gem 'acts_as_rdfable', github: 'ualbertalib/acts_as_rdfable', tag: 'v0.2.3'
 gem 'builder_deferred_tagging', github: 'ualbertalib/builder_deferred_tagging', tag: 'v0.01'
