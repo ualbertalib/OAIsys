@@ -60,21 +60,16 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     if parameters[:identifier].blank?
       formats = SUPPORTED_FORMATS
     else
-      uuid = params[:identifier]
-      uuid.slice! 'oai:era.library.ualberta.ca:'
       # Assumption here that an object cannot be both an item and thesis.
-      identifier_format = if Thesis.find_by(id: uuid).present?
+      identifier_format = if Thesis.find_by(id: params[:identifier]).present?
                             'oai_etdms'
-                          elsif Item.find_by(id: uuid).present?
+                          elsif Item.find_by(id: params[:identifier]).present?
                             'oai_dc'
                           end
 
       raise Oaisys::IdDoesNotExistError.new(parameters: parameters) if identifier_format.nil?
 
-      formats = []
-      SUPPORTED_FORMATS.each do |supported_format|
-        formats << supported_format if identifier_format == supported_format[:metadataPrefix]
-      end
+      formats = SUPPORTED_FORMATS.select { |supported_format| supported_format[:metadataPrefix] == identifier_format }
       raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
     end
 
@@ -163,6 +158,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def expect_args(required: [], optional: [], exclusive: [])
+    params[:identifier]&.slice! 'oai:era.library.ualberta.ca:'
+
     # This makes the strong assumption that there's only one exclusive param per verb (which is the resumption token.)
     if params.key?(exclusive.first)
       params.require([:verb])
