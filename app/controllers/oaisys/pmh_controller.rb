@@ -54,12 +54,27 @@ class Oaisys::PMHController < Oaisys::ApplicationController
                                                 resumption_token_provided: resumption_token_provided }
   end
 
-  # TODO: Handle the identifier argument.
   def list_metadata_formats
     parameters = expect_args optional: [:identifier]
 
+    if parameters[:identifier].blank?
+      formats = SUPPORTED_FORMATS
+    else
+      # Assumption here that an object cannot be both an item and thesis.
+      identifier_format = if Thesis.find_by(id: params[:identifier]).present?
+                            'oai_etdms'
+                          elsif Item.find_by(id: params[:identifier]).present?
+                            'oai_dc'
+                          end
+
+      raise Oaisys::IdDoesNotExistError.new(parameters: parameters) if identifier_format.nil?
+
+      formats = SUPPORTED_FORMATS.select { |supported_format| supported_format[:metadataPrefix] == identifier_format }
+      raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
+    end
+
     render :list_metadata_formats,
-           formats: :xml, locals: { supported_formats: SUPPORTED_FORMATS, parameters: parameters }
+           formats: :xml, locals: { formats: formats, parameters: parameters }
   end
 
   def list_records
@@ -99,9 +114,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     metadata_format = params[:metadataPrefix]
     model = model_for_verb_format(verb: :get_record, format: metadata_format)
-    obj = model.find(params[:identifier])
+    obj = model.find_by(id: params[:identifier])
 
-    raise IdDoesNotExistError.new(paramerters: params) if obj.blank?
+    raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
     render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format }
   end
@@ -143,6 +158,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def expect_args(required: [], optional: [], exclusive: [])
+    params[:identifier]&.slice! 'oai:era.library.ualberta.ca:'
+
     # This makes the strong assumption that there's only one exclusive param per verb (which is the resumption token.)
     if params.key?(exclusive.first)
       params.require([:verb])

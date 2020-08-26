@@ -7,3 +7,4 @@ en:
     unavailable_metadata_format: 'Unavailable metadata format'
     unknown_verb: "Unknown verb '%{bad_verb}'"
     id_does_not_exist: 'No matching identifier'
+    no_metadata_formats: 'There are no metadata formats available for the specified item.'

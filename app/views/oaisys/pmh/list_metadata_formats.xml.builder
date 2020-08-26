@@ -21,11 +21,11 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
 
 xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 xml.tag!('ListMetadataFormats') do
-  supported_formats.each do |supported_format|
+  formats.each do |format|
     xml.tag!('metadataFormat') do
-      xml.metadataPrefix supported_format[:metadataPrefix]
-      xml.schema supported_format[:schema]
-      xml.metadataNamespace supported_format[:metadataNamespace]
+      xml.metadataPrefix format[:metadataPrefix]
+      xml.schema format[:schema]
+      xml.metadataNamespace format[:metadataNamespace]
     end
   end
 end

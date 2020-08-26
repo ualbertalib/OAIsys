@@ -1,4 +1,4 @@
-class Oaisys::IdDoesNotExistError < Oaisys::PMHError
+class Oaisys::NoMetadataFormatsError < Oaisys::PMHError
 
   attr_reader :parameters
 
@@ -7,11 +7,11 @@ class Oaisys::IdDoesNotExistError < Oaisys::PMHError
   end
 
   def error_code
-    :idDoesNotExist
+    :noMetadataFormats
   end
 
   def error_message
-    I18n.t('error_messages.id_does_not_exist')
+    I18n.t('error_messages.no_metadata_formats')
   end
 
 end
