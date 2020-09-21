@@ -218,7 +218,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
 
     model = model.updated_on_or_after(from_date) if from_date.present?
-    model = model.updated_on_or_before(until_date) if until_date.present?
+
+    if until_date.present?
+      just_after_until_date = (until_date.to_time + 1.second).utc.xmlschema
+      model = model.updated_before(just_after_until_date)
+    end
 
     items_per_request = Oaisys::Engine.config.items_per_request
     model = model.page(page).per(items_per_request)

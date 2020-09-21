@@ -26,7 +26,7 @@ xml.GetRecord do |get_record|
   get_record.record do |record|
     record.header do |header|
       header.identifier "oai:era.library.ualberta.ca:#{item.id}"
-      header.datestamp item.updated_at
+      header.datestamp item.updated_at.utc.xmlschema
       item.member_of_paths.each { |path| header.setSpec path.tr('/', ':') }
     end
     record.metadata do |metadata_xml|
