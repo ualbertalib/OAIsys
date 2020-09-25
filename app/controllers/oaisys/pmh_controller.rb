@@ -73,7 +73,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
     end
 
-    parameters['identifier'].prepend('oai:era.library.ualberta.ca:')
+    parameters['identifier'].prepend('oai:era.library.ualberta.ca:') if parameters['identifier'].present?
     render :list_metadata_formats,
            formats: :xml, locals: { formats: formats, parameters: parameters }
   end
