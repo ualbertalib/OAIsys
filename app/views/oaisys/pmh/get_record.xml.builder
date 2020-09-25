@@ -20,12 +20,12 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
                             'http://www.w3.org/2005/Atom')
 
 xml.tag!('request', 'https://era.library.ualberta.ca/oai', verb: 'GetRecord', metadataPrefix: metadata_format,
-                                                           identifier: item.id)
+                                                           identifier: identifier)
 
 xml.GetRecord do |get_record|
   get_record.record do |record|
     record.header do |header|
-      header.identifier "oai:era.library.ualberta.ca:#{item.id}"
+      header.identifier identifier
       header.datestamp item.updated_at.utc.xmlschema
       item.member_of_paths.each { |path| header.setSpec path.tr('/', ':') }
     end

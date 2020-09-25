@@ -73,6 +73,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
     end
 
+    parameters['identifier'].prepend('oai:era.library.ualberta.ca:')
     render :list_metadata_formats,
            formats: :xml, locals: { formats: formats, parameters: parameters }
   end
@@ -118,7 +119,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
-    render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format }
+
+    identifier = params['identifier'].prepend('oai:era.library.ualberta.ca:')
+    render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format, identifier: identifier }
   end
   # rubocop:enable Naming/AccessorMethodName
 
