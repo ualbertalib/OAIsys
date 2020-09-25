@@ -119,7 +119,6 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
-
     identifier = params['identifier'].prepend('oai:era.library.ualberta.ca:')
     render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format, identifier: identifier }
   end
