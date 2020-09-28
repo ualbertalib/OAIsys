@@ -118,7 +118,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
-    render :get_record, formats: :xml, locals: { item: obj, parameters: prep_identifiers(params)}
+    render :get_record, formats: :xml, locals: { item: obj, parameters: prep_identifiers(params) }
   end
   # rubocop:enable Naming/AccessorMethodName
 
@@ -273,7 +273,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
   end
 
-  def prep_identifiers (parameters)
+  def prep_identifiers(parameters)
     parameters['identifier'].prepend('oai:era.library.ualberta.ca:') if parameters['identifier'].present?
     parameters
   end
