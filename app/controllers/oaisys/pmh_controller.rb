@@ -73,9 +73,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
     end
 
-    parameters['identifier'].prepend('oai:era.library.ualberta.ca:') if parameters['identifier'].present?
     render :list_metadata_formats,
-           formats: :xml, locals: { formats: formats, parameters: parameters }
+           formats: :xml, locals: { formats: formats, parameters: prep_identifiers(parameters) }
   end
 
   def list_records
@@ -119,8 +118,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
-    identifier = params['identifier'].prepend('oai:era.library.ualberta.ca:')
-    render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format, identifier: identifier }
+    render :get_record, formats: :xml, locals: { item: obj, parameters: prep_identifiers(params)}
   end
   # rubocop:enable Naming/AccessorMethodName
 
@@ -273,6 +271,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     # Results have changed, expire token
     expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
     raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+  end
+
+  def prep_identifiers (parameters)
+    parameters['identifier'].prepend('oai:era.library.ualberta.ca:') if parameters['identifier'].present?
+    parameters
   end
 
 end

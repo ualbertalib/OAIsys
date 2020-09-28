@@ -19,18 +19,17 @@ xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
                             'http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd '\
                             'http://www.w3.org/2005/Atom')
 
-xml.tag!('request', 'https://era.library.ualberta.ca/oai', verb: 'GetRecord', metadataPrefix: metadata_format,
-                                                           identifier: identifier)
+xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 
 xml.GetRecord do |get_record|
   get_record.record do |record|
     record.header do |header|
-      header.identifier identifier
+      header.identifier parameters[:identifier]
       header.datestamp item.updated_at.utc.xmlschema
       item.member_of_paths.each { |path| header.setSpec path.tr('/', ':') }
     end
     record.metadata do |metadata_xml|
-      item.serialize_metadata(format: metadata_format, into_document: metadata_xml)
+      item.serialize_metadata(format: params[:metadataPrefix], into_document: metadata_xml)
     end
   end
 end
