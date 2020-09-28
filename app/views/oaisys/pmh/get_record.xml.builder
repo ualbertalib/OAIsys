@@ -29,7 +29,7 @@ xml.GetRecord do |get_record|
       item.member_of_paths.each { |path| header.setSpec path.tr('/', ':') }
     end
     record.metadata do |metadata_xml|
-      item.serialize_metadata(format: params[:metadataPrefix], into_document: metadata_xml)
+      item.serialize_metadata(format: parameters[:metadataPrefix], into_document: metadata_xml)
     end
   end
 end
