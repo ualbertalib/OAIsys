@@ -74,7 +74,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     end
 
     render :list_metadata_formats,
-           formats: :xml, locals: { formats: formats, parameters: parameters }
+           formats: :xml, locals: { formats: formats, parameters: prep_identifiers(parameters) }
   end
 
   def list_records
@@ -118,7 +118,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
-    render :get_record, formats: :xml, locals: { item: obj, metadata_format: metadata_format }
+    render :get_record, formats: :xml, locals: { item: obj, parameters: prep_identifiers(params) }
   end
   # rubocop:enable Naming/AccessorMethodName
 
@@ -218,7 +218,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
 
     model = model.updated_on_or_after(from_date) if from_date.present?
-    model = model.updated_on_or_before(until_date) if until_date.present?
+
+    if until_date.present?
+      just_after_until_date = (until_date.to_time + 1.second).utc.xmlschema
+      model = model.updated_before(just_after_until_date)
+    end
 
     items_per_request = Oaisys::Engine.config.items_per_request
     model = model.page(page).per(items_per_request)
@@ -267,6 +271,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     # Results have changed, expire token
     expire_token(resumption_token: parameters[:resumptionToken], verb: parameters[:verb])
     raise Oaisys::BadResumptionTokenError.new, I18n.t('error_messages.resumption_token_invalid')
+  end
+
+  def prep_identifiers(parameters)
+    parameters['identifier'].prepend('oai:era.library.ualberta.ca:') if parameters['identifier'].present?
+    parameters
   end
 
 end
