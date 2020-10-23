@@ -8,10 +8,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       metadataNamespace: 'http://www.openarchives.org/OAI/2.0/oai_dc/' },
     { metadataPrefix: 'oai_etdms',
       schema: 'http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd',
-      metadataNamespace: 'http://www.ndltd.org/standards/metadata/etdms/1.0/' },
-    { metadataPrefix: 'ore',
-      schema: 'http://www.kbcafe.com/rss/atom.xsd.xml',
-      metadataNamespace: 'http://www.w3.org/2005/Atom' }
+      metadataNamespace: 'http://www.ndltd.org/standards/metadata/etdms/1.0/' }
   ].freeze
 
   def bad_verb
@@ -89,9 +86,13 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     query_params = query_params_from_api_params(params)
 
     items, total_count, cursor = public_items_for_metadata_format(**query_params)
+
+    # If the model is nil there was a bad argument; Otherwise, if blank, no items were returned.
+    raise Oaisys::BadArgumentError.new(parameters: params.slice(:verb)) if items.nil?
+
     params[:item_count] = total_count if params[:item_count].nil?
 
-    raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if items.empty?
+    raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if items.blank?
 
     check_resumption_token(items, resumption_token_provided, total_count, params)
 
@@ -134,10 +135,14 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     query_params = query_params_from_api_params(params)
 
     identifiers_model, total_count, cursor = public_items_for_metadata_format(**query_params)
+
+    # If the model is nil there was a bad argument; Otherwise, if blank, no items were returned.
+    raise Oaisys::BadArgumentError.new(parameters: params.slice(:verb)) if identifiers_model.nil?
+
     identifiers = identifiers_model.pluck(:id, :updated_at, :member_of_paths)
     params[:item_count] = total_count if params[:item_count].nil?
 
-    raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if identifiers.empty?
+    raise Oaisys::NoRecordsMatchError.new(parameters: params.slice(:verb, :metadataPrefix)) if identifiers.blank?
 
     check_resumption_token(identifiers_model, resumption_token_provided, total_count, params)
 
@@ -158,7 +163,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def expect_args(required: [], optional: [], exclusive: [])
-    params[:identifier]&.slice! 'oai:era.library.ualberta.ca:'
+    params[:identifier]&.slice! 'oai:era.library.ualberta.ca:' if params.present?
 
     # This makes the strong assumption that there's only one exclusive param per verb (which is the resumption token.)
     if params.key?(exclusive.first)
@@ -217,17 +222,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model = model.public_items
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
 
-    model = model.updated_on_or_after(from_date) if from_date.present?
-
-    if until_date.present?
-      just_after_until_date = (until_date.to_time + 1.second).utc.xmlschema
-      model = model.updated_before(just_after_until_date)
-    end
-
+    model = handle_from_and_until_dates(model, from_date, until_date)
     items_per_request = Oaisys::Engine.config.items_per_request
-    model = model.page(page).per(items_per_request)
+    model = model&.page(page)&.per(items_per_request)
     cursor = (page - 1) * items_per_request
-    [model, model.total_count, cursor]
+    [model, model&.total_count, cursor]
   end
 
   def sets_on_page(page:)
@@ -276,6 +275,50 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   def prep_identifiers(parameters)
     parameters['identifier'].prepend('oai:era.library.ualberta.ca:') if parameters['identifier'].present?
     parameters
+  end
+
+  # Returning nil gives a bad argument error.
+  def handle_from_and_until_dates(model, from_date, until_date)
+    if from_date.present?
+      from_date_format = get_date_format(from_date)
+
+      case from_date_format
+      when 1
+        model = model.updated_on_or_after(from_date)
+      when 2
+        model = model.updated_on_or_after(DateTime.strptime(from_date, '%Y-%m-%d'))
+      else
+        return nil
+      end
+    end
+
+    if until_date.present?
+      until_date_format = get_date_format(until_date)
+
+      case until_date_format
+      when 1
+        just_after_until_date = (until_date.to_time + 1.second).utc.xmlschema
+        model = model.updated_before(just_after_until_date)
+        return nil if from_date.present? && from_date_format != 1
+      when 2
+        model = model.updated_before(DateTime.strptime(until_date, '%Y-%m-%d') + 1.day)
+        return nil if from_date.present? && from_date_format != 2
+      else
+        return nil
+      end
+    end
+
+    model
+  end
+
+  def get_date_format(date)
+    if date.match('\b[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\b')
+      1
+    elsif date.match('\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b')
+      2
+    else
+      3
+    end
   end
 
 end

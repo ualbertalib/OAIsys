@@ -10,6 +10,17 @@ class ListMetadataFormatsTest < ActionDispatch::IntegrationTest
 
   def test_list_metadata_formats_xml
     get oaisys_path(verb: 'ListMetadataFormats'), headers: { 'Accept' => 'application/xml' }
+
+    assert_list_metadata_formats_response
+  end
+
+  def test_list_metadata_formats_xml_post
+    post oaisys_path(verb: 'ListMetadataFormats'), headers: { 'Content-Type' => 'application/x-www-form-urlencoded',
+                                                              'Content-Length' => 82 }
+    assert_list_metadata_formats_response
+  end
+
+  def assert_list_metadata_formats_response
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
@@ -29,11 +40,6 @@ class ListMetadataFormatsTest < ActionDispatch::IntegrationTest
           assert_select 'metadataPrefix', 'oai_etdms'
           assert_select 'schema', 'http://www.ndltd.org/standards/metadata/etdms/1-0/etdms.xsd'
           assert_select 'metadataNamespace', 'http://www.ndltd.org/standards/metadata/etdms/1.0/'
-        end
-        assert_select 'metadataFormat' do
-          assert_select 'metadataPrefix', 'ore'
-          assert_select 'schema', 'http://www.kbcafe.com/rss/atom.xsd.xml'
-          assert_select 'metadataNamespace', 'http://www.w3.org/2005/Atom'
         end
       end
     end
