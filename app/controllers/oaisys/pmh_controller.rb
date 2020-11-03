@@ -312,9 +312,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def get_date_format(date)
-    if date.match('\b[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\b')
+    if date.match?('\b[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\b')
       1
-    elsif date.match('\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b')
+    elsif date.match?('\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b')
       2
     else
       3
