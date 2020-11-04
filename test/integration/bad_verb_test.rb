@@ -15,7 +15,8 @@ class BadVerbTest < ActionDispatch::IntegrationTest
   end
 
   def test_bad_verb_xml_post
-    post oaisys_path(verb: 'nastyVerb'), headers: { 'Content-Type' => 'application/x-www-form-urlencoded', 'Content-Length' => 82 }
+    post oaisys_path(verb: 'nastyVerb'), headers: { 'Content-Type' => 'application/x-www-form-urlencoded',
+                                                    'Content-Length' => 82 }
 
     assert_unknown_verb_response
   end
@@ -41,7 +42,7 @@ class BadVerbTest < ActionDispatch::IntegrationTest
     assert_select 'OAI-PMH' do
       assert_select 'responseDate'
       assert_select 'request'
-      assert_select 'error', I18n.t('error_messages.unknown_verb')
+      assert_select 'error', I18n.t('error_messages.unknown_verb', bad_verb: 'nastyVerb')
     end
   end
 
