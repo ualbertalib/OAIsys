@@ -2,6 +2,8 @@ require_dependency 'oaisys/application_controller'
 
 class Oaisys::PMHController < Oaisys::ApplicationController
 
+  skip_before_action :verify_authenticity_token
+
   SUPPORTED_FORMATS = [
     { metadataPrefix: 'oai_dc',
       schema: 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
