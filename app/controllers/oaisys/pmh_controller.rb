@@ -285,9 +285,9 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       from_date_format = get_date_format(from_date)
 
       case from_date_format
-      when 1
+      when :full_date_with_time
         model = model.updated_on_or_after(from_date)
-      when 2
+      when :full_date
         model = model.updated_on_or_after(DateTime.strptime(from_date, '%Y-%m-%d'))
       else
         return nil
@@ -298,13 +298,13 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       until_date_format = get_date_format(until_date)
 
       case until_date_format
-      when 1
+      when :full_date_with_time
         just_after_until_date = (until_date.to_time + 1.second).utc.xmlschema
         model = model.updated_before(just_after_until_date)
-        return nil if from_date.present? && from_date_format != 1
-      when 2
+        return nil if from_date.present? && from_date_format != :full_date_with_time
+      when :full_date
         model = model.updated_before(DateTime.strptime(until_date, '%Y-%m-%d') + 1.day)
-        return nil if from_date.present? && from_date_format != 2
+        return nil if from_date.present? && from_date_format != :full_date
       else
         return nil
       end
@@ -314,12 +314,14 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def get_date_format(date)
+    # YYYY-MM-DDThh:mm:ssZ
     if date.match?('\b[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\b')
-      1
+      :full_date_with_time
+    # YYYY-MM-DD
     elsif date.match?('\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b')
-      2
+      :full_date
     else
-      3
+      :unknown
     end
   end
 
