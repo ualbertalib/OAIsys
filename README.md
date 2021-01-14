@@ -1,3 +1,6 @@
+
+[![Github Build Status](https://github.com/ualbertalib/oaisys/workflows/CI/badge.svg)](https://github.com/ualbertalib/oaisys/actions)
+
 # Oaisys
 Short description and motivation.
 
