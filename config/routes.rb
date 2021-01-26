@@ -3,7 +3,14 @@ class PMHConstraint
   PMHVERBS = %w[Identify ListSets ListMetadataFormats ListRecords GetRecord ListIdentifiers].freeze
 
   def matches?(request)
-    request.query_parameters.key?(:verb) && PMHVERBS.include?(request.query_parameters[:verb])
+    # If post request, otherwise get request.
+    @parameters = if request.raw_post.present? && request.request_parameters.present?
+                    request.request_parameters.symbolize_keys
+                  else
+                    request.query_parameters
+                  end
+
+    @parameters.key?(:verb) && PMHVERBS.include?(@parameters[:verb])
   end
 
 end
@@ -19,7 +26,7 @@ end
 class IdentifyConstraint < PMHConstraint
 
   def matches?(request)
-    super && request.query_parameters[:verb] == 'Identify'
+    super && @parameters[:verb] == 'Identify'
   end
 
 end
@@ -27,7 +34,7 @@ end
 class ListSetsConstraint < PMHConstraint
 
   def matches?(request)
-    super && request.query_parameters[:verb] == 'ListSets'
+    super && @parameters[:verb] == 'ListSets'
   end
 
 end
@@ -35,7 +42,7 @@ end
 class ListMetadataFormatsConstraint < PMHConstraint
 
   def matches?(request)
-    super && request.query_parameters[:verb] == 'ListMetadataFormats'
+    super && @parameters[:verb] == 'ListMetadataFormats'
   end
 
 end
@@ -43,7 +50,7 @@ end
 class ListRecordsConstraint < PMHConstraint
 
   def matches?(request)
-    super && request.query_parameters[:verb] == 'ListRecords'
+    super && @parameters[:verb] == 'ListRecords'
   end
 
 end
@@ -51,7 +58,7 @@ end
 class GetRecordConstraint < PMHConstraint
 
   def matches?(request)
-    super && request.query_parameters[:verb] == 'GetRecord'
+    super && @parameters[:verb] == 'GetRecord'
   end
 
 end
@@ -59,7 +66,7 @@ end
 class ListIdentifiersConstraint < PMHConstraint
 
   def matches?(request)
-    super && request.query_parameters[:verb] == 'ListIdentifiers'
+    super && @parameters[:verb] == 'ListIdentifiers'
   end
 
 end

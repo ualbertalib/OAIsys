@@ -10,6 +10,18 @@ class ListIdentifiersTest < ActionDispatch::IntegrationTest
 
   def test_cannot_disseminate_format_xml
     get oaisys_path(verb: 'ListIdentifiers', metadataPrefix: 'nasty'), headers: { 'Accept' => 'application/xml' }
+
+    assert_unavailable_metadata_format_response
+  end
+
+  def test_cannot_disseminate_format_xml_post
+    post oaisys_path(verb: 'ListIdentifiers', metadataPrefix: 'nasty'),
+         headers: { 'Content-Type' => 'application/x-www-form-urlencoded', 'Content-Length' => 82 }
+
+    assert_unavailable_metadata_format_response
+  end
+
+  def assert_unavailable_metadata_format_response
     assert_response :success
 
     schema = Nokogiri::XML::Schema(File.open(file_fixture('OAI-PMH.xsd')))
