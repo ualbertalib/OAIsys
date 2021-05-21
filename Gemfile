@@ -15,5 +15,7 @@ gemspec
 # gem 'byebug', group: [:development, :test]
 
 # RDF stuff
-gem 'acts_as_rdfable', github: 'ualbertalib/acts_as_rdfable', tag: 'v0.2.4'
+gem 'acts_as_rdfable', path: '../acts_as_rdfable'
 gem 'builder_deferred_tagging', github: 'ualbertalib/builder_deferred_tagging', tag: 'v0.01'
+# temporary hack to deal with mimemagic for local development, proper upstream change needed
+# gem 'mimemagic', github: 'mimemagicrb/mimemagic', ref: '01f92d86d15d85cfd0f20dabd025dcbd36a8a60f'

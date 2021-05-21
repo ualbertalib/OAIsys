@@ -61,14 +61,14 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     else
       # Assumption here that an object cannot be both an item and thesis.
       identifier_format = if Thesis.find_by(id: params[:identifier]).present?
-                            'oai_etdms'
+                            ['oai_etdms', 'oai_dc']
                           elsif Item.find_by(id: params[:identifier]).present?
-                            'oai_dc'
+                            ['oai_dc']
                           end
 
       raise Oaisys::IdDoesNotExistError.new(parameters: parameters) if identifier_format.nil?
 
-      formats = SUPPORTED_FORMATS.select { |supported_format| supported_format[:metadataPrefix] == identifier_format }
+      formats = SUPPORTED_FORMATS.select { |supported_format| identifier_format.include? supported_format[:metadataPrefix]  }
       raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
     end
 
@@ -108,6 +108,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
                                     cursor: cursor, complete_list_size: total_count,
                                     resumption_token: resumption_token, last_page: items.last_page?,
                                     resumption_token_provided: resumption_token_provided }
+
   end
 
   # get_record is referring to the verb, not a getter.
@@ -117,8 +118,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
     metadata_format = params[:metadataPrefix]
     model = model_for_verb_format(verb: :get_record, format: metadata_format)
-    obj = model.find_by(id: params[:identifier])
 
+    obj = (Item.solr_query.where(id: params[:identifier]) + Thesis.solr_query.where(id: params[:identifier])).first
     raise Oaisys::IdDoesNotExistError.new(parameters: params) if obj.blank?
 
     render :get_record, formats: :xml, locals: { item: obj, parameters: prep_identifiers(params) }
@@ -208,6 +209,17 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     model
   end
 
+  def query_for_list_records_oai_dc(member_of_paths)
+    if member_of_paths.nil?
+      Item.solr_query + Thesis.solr_query
+    else
+      Item.solr_query.where(member_of_paths: member_of_paths) + Thesis.solr_query.where(member_of_paths: member_of_paths)
+    end
+
+    # TODO: throw CannotDisseminateError when appropriate
+    # raise Oaisys::CannotDisseminateError.new(parameters: { verb: verb, metadataPrefix: format }) if model.blank?
+  end
+
   def query_params_from_api_params(params)
     {}.tap do |query_params|
       query_params[:verb] = params[:verb]
@@ -220,15 +232,25 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def public_items_for_metadata_format(verb:, format:, page:, restricted_to_set: nil, from_date: nil, until_date: nil)
-    model = model_for_verb_format(verb: verb, format: format)
-    model = model.public_items
-    model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
+    unless ((verb == 'ListRecords') && (format == 'oai_dc')) || ((verb == 'ListIdentifiers') && (format == 'oai_dc'))
+      model = model_for_verb_format(verb: verb, format: format)
+      model = model.public_items
+      model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
 
-    model = handle_from_and_until_dates(model, from_date, until_date)
-    items_per_request = Oaisys::Engine.config.items_per_request
-    model = model&.page(page)&.per(items_per_request)
-    cursor = (page - 1) * items_per_request
-    [model, model&.total_count, cursor]
+      model = handle_from_and_until_dates(model, from_date, until_date)
+      items_per_request = Oaisys::Engine.config.items_per_request
+      model = model&.page(page)&.per(items_per_request)
+      cursor = (page - 1) * items_per_request
+      [model, model&.total_count, cursor]
+    else
+      solr_query = query_for_list_records_oai_dc(restricted_to_set&.tr(':', '/'))
+      solr_query = handle_from_and_until_dates_s(solr_query, from_date, until_date)
+      items_per_request = Oaisys::Engine.config.items_per_request
+
+      solr_query&.page(page)&.per(items_per_request)
+      cursor = (page - 1) * items_per_request
+      [solr_query, solr_query&.total_count, cursor]
+    end
   end
 
   def sets_on_page(page:)
@@ -311,6 +333,41 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     end
 
     model
+  end
+
+
+  # Returning nil gives a bad argument error.
+  def handle_from_and_until_dates_s(solr_query, from_date, until_date)
+    if from_date.present?
+      from_date_format = get_date_format(from_date)
+
+      case from_date_format
+      when :full_date_with_time
+        solr_query = solr_query.where(updated_on_or_after: from_date)
+      when :full_date
+        solr_query = solr_query.where(updated_on_or_after: DateTime.strptime(from_date, '%Y-%m-%d').strftime('%Y-%m-%dT%H:%M:%SZ'))
+      else
+        return nil
+      end
+    end
+
+    if until_date.present?
+      until_date_format = get_date_format(until_date)
+
+      case until_date_format
+      when :full_date_with_time
+        just_after_until_date = (until_date.to_time + 1.second).utc.xmlschema
+        solr_query = solr_query.where(updated_before: just_after_until_date)
+        return nil if from_date.present? && from_date_format != :full_date_with_time
+      when :full_date
+        solr_query = solr_query.where(updated_before: (DateTime.strptime(until_date, '%Y-%m-%d') + 1.day).strftime('%Y-%m-%dT%H:%M:%SZ'))
+        return nil if from_date.present? && from_date_format != :full_date
+      else
+        return nil
+      end
+    end
+
+    solr_query
   end
 
   def get_date_format(date)
