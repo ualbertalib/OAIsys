@@ -12,6 +12,7 @@ AllCops:
   DisplayStyleGuide: true
   Exclude:
     - 'db/**/*'
+    - 'test/dummy/db/**/*'
     - 'tmp/**/*'
     - 'vendor/**/*'
   ExtraDetails: true
@@ -63,6 +64,9 @@ Metrics/PerceivedComplexity:
 
 Metrics/ParameterLists:
   Max: 6 # default 5
+  Exclude:
+    - test/dummy/app/models/jupiter_core/search.rb
+    - test/dummy/app/models/jupiter_core/solr_services/deferred_faceted_solr_query.rb
 
 Naming/FileName:
   Exclude:
@@ -132,4 +136,16 @@ Style/WordArray:
   Enabled: false
 
 Performance/TimesMap:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Exclude:
+    - test/dummy/app/models/jupiter_core//solr_services/deferred_faceted_solr_query.rb
+    - test/dummy/app/models/jupiter_core/search.rb
+
+Naming/MemoizedInstanceVariableName:
+  Exclude:
+    - test/dummy/app/models/jupiter_core//solr_services/deferred_faceted_solr_query.rb
+
+Naming/VariableNumber:
   Enabled: false

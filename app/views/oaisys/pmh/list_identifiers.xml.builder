@@ -23,7 +23,7 @@ xml.tag!('request', parameters, 'https://era.library.ualberta.ca/oai')
 xml.ListIdentifiers do
   identifiers.each do |identifier, date, sets|
     xml.tag!('header') do
-      xml.identifier 'oai:era.library.ualberta.ca:' + identifier
+      xml.identifier "oai:era.library.ualberta.ca:#{identifier}"
       xml.datestamp date.utc.xmlschema
       sets.each do |set|
         xml.setSpec set.tr('/', ':')
