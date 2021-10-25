@@ -23,6 +23,7 @@ group :development, :test do
   gem 'paper_trail' # Track object changes
   gem 'rdf', '~> 3.1.15'
   gem 'redis', '~> 4.1'
+  gem 'rubocop', '~> 1.22.1', require: false
 end
 
 group :test do
