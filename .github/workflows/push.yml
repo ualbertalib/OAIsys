@@ -16,6 +16,8 @@ jobs:
         image: redis:alpine
         ports:
           - 6379/tcp
+        volumes:
+          - redis:/data
 
     steps:
       - uses: actions/checkout@v2
