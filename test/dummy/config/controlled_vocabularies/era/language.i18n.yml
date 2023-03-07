@@ -1,0 +1,12 @@
+language:
+  english: http://id.loc.gov/vocabulary/iso639-2/eng
+  french: http://id.loc.gov/vocabulary/iso639-2/fre
+  other: http://terms.library.ualberta.ca/other
+  ukrainian: http://id.loc.gov/vocabulary/iso639-2/ukr
+  german: http://id.loc.gov/vocabulary/iso639-2/ger
+  japanese: http://id.loc.gov/vocabulary/iso639-2/jpn
+  italian: http://id.loc.gov/vocabulary/iso639-2/ita
+  russian: http://id.loc.gov/vocabulary/iso639-2/rus
+  no_linguistic_content: http://id.loc.gov/vocabulary/iso639-2/zxx
+  chinese: http://id.loc.gov/vocabulary/iso639-2/zho
+  spanish: http://id.loc.gov/vocabulary/iso639-2/spa

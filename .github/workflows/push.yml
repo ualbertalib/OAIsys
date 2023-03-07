@@ -12,14 +12,20 @@ jobs:
         - 5432:5432
         env:
           POSTGRES_PASSWORD: mysecretpassword
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379/tcp
+        volumes:
+          - redis:/data
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Ruby 2.6
+      - name: Set up Ruby 2.7
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.6.6
+          ruby-version: 2.7.7
 
       - name: Cache Ruby gems
         uses: actions/cache@v2
@@ -39,6 +45,11 @@ jobs:
       - name: Get yarn cache
         id: yarn-cache
         run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Setup redis
+        uses: supercharge/redis-github-action@1.2.0
+        with:
+          redis-version: 4
 
       - uses: actions/cache@v2
         with:

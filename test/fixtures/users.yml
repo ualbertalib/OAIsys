@@ -1,0 +1,49 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+user_admin:
+  name: Administrator
+  email: administrator@example.com
+  admin: true
+  suspended: false
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
+
+user_admin_two:
+  name: Tyrion Lannister
+  email: tyrion_lannister@example.com
+  admin: true
+  suspended: false
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
+
+user_regular:
+  name: John Snow
+  email: john_snow@example.com
+  admin: false
+  suspended: false
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
+
+user_regular_two:
+  name: Daenerys Targaryen
+  email: daenerys_targaryen@example.com
+  admin: false
+  suspended: false
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
+
+user_suspended:
+  name: Joffrey Baratheon
+  email: joffrey_baratheon@example.com
+  admin: false
+  suspended: true
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
+
+user_system:
+  name: System user
+  email: ditech@ualberta.ca
+  admin: false
+  system: true
+  api_key_digest: <%= BCrypt::Password.create('3eeb395e-63b7-11ea-bc55-0242ac130003') %>
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
