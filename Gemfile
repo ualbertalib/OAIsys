@@ -29,7 +29,6 @@ end
 group :test do
   gem 'bcrypt', '>= 3.1.13'
   gem 'kaminari' # Pagination
-  gem 'pry-byebug'
   gem 'rdf-n3', '~> 3.1.2'
   gem 'rdf-vocab', '~> 3.1.14'
 end
