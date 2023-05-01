@@ -15,7 +15,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
 
   def bad_verb
     bad_verb = params.permit(:verb).to_h[:verb]
-    raise Oaisys::BadVerbError.new(bad_verb: bad_verb)
+    raise Oaisys::BadVerbError.new(bad_verb:)
   end
 
   def identify
@@ -44,13 +44,13 @@ class Oaisys::PMHController < Oaisys::ApplicationController
       full_set_name = top_level_set + ' / ' + title
       [full_set_id, full_set_name, description]
     end
-    resumption_token = resumption_token_from_params(parameters: parameters)
+    resumption_token = resumption_token_from_params(parameters:)
     parameters = parameters.slice(:verb, :resumptionToken) if resumption_token_provided
 
-    render :list_sets, formats: :xml, locals: { sets: sets, parameters: parameters.except(:page, :item_count),
-                                                cursor: cursor, complete_list_size: total_count,
-                                                resumption_token: resumption_token, last_page: sets_model.last_page?,
-                                                resumption_token_provided: resumption_token_provided }
+    render :list_sets, formats: :xml, locals: { sets:, parameters: parameters.except(:page, :item_count),
+                                                cursor:, complete_list_size: total_count,
+                                                resumption_token:, last_page: sets_model.last_page?,
+                                                resumption_token_provided: }
   end
 
   def list_metadata_formats
@@ -66,14 +66,14 @@ class Oaisys::PMHController < Oaisys::ApplicationController
                             'oai_dc'
                           end
 
-      raise Oaisys::IdDoesNotExistError.new(parameters: parameters) if identifier_format.nil?
+      raise Oaisys::IdDoesNotExistError.new(parameters:) if identifier_format.nil?
 
       formats = SUPPORTED_FORMATS.select { |supported_format| supported_format[:metadataPrefix] == identifier_format }
-      raise Oaisys::NoMetadataFormatsError.new(parameters: parameters) if formats.empty?
+      raise Oaisys::NoMetadataFormatsError.new(parameters:) if formats.empty?
     end
 
     render :list_metadata_formats,
-           formats: :xml, locals: { formats: formats, parameters: prep_identifiers(parameters) }
+           formats: :xml, locals: { formats:, parameters: prep_identifiers(parameters) }
   end
 
   def list_records
@@ -103,11 +103,11 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     params = params.slice(:verb, :resumptionToken) if resumption_token_provided
 
     render :list_records,
-           formats: :xml, locals: { items: items, parameters: params.except(:page, :item_count),
-                                    metadata_format: metadata_format,
-                                    cursor: cursor, complete_list_size: total_count,
-                                    resumption_token: resumption_token, last_page: items.last_page?,
-                                    resumption_token_provided: resumption_token_provided }
+           formats: :xml, locals: { items:, parameters: params.except(:page, :item_count),
+                                    metadata_format:,
+                                    cursor:, complete_list_size: total_count,
+                                    resumption_token:, last_page: items.last_page?,
+                                    resumption_token_provided: }
   end
 
   # get_record is referring to the verb, not a getter.
@@ -151,10 +151,10 @@ class Oaisys::PMHController < Oaisys::ApplicationController
     resumption_token = resumption_token_from_params(parameters: params)
     params = params.slice(:verb, :resumptionToken) if resumption_token_provided
     render :list_identifiers,
-           formats: :xml, locals: { identifiers: identifiers, parameters: params.except(:page, :item_count),
-                                    cursor: cursor, complete_list_size: total_count,
-                                    resumption_token: resumption_token, last_page: identifiers_model.last_page?,
-                                    resumption_token_provided: resumption_token_provided }
+           formats: :xml, locals: { identifiers:, parameters: params.except(:page, :item_count),
+                                    cursor:, complete_list_size: total_count,
+                                    resumption_token:, last_page: identifiers_model.last_page?,
+                                    resumption_token_provided: }
   end
 
   private
@@ -202,8 +202,8 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def model_for_verb_format(verb:, format:)
-    model = ActsAsRdfable.known_classes_for(format: format).first
-    raise Oaisys::CannotDisseminateError.new(parameters: { verb: verb, metadataPrefix: format }) if model.blank?
+    model = ActsAsRdfable.known_classes_for(format:).first
+    raise Oaisys::CannotDisseminateError.new(parameters: { verb:, metadataPrefix: format }) if model.blank?
 
     model
   end
@@ -220,7 +220,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def public_items_for_metadata_format(verb:, format:, page:, restricted_to_set: nil, from_date: nil, until_date: nil)
-    model = model_for_verb_format(verb: verb, format: format)
+    model = model_for_verb_format(verb:, format:)
     model = model.public_items
     model = model.public_items.belongs_to_path(restricted_to_set.tr(':', '/')) if restricted_to_set.present?
 
@@ -241,7 +241,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def expire_token(resumption_token:, verb:)
-    Oaisys::Engine.config.redis.expire_token(resumption_token: resumption_token, verb: verb, identifier: user_agent)
+    Oaisys::Engine.config.redis.expire_token(resumption_token:, verb:, identifier: user_agent)
   end
 
   def resumption_token_from_params(parameters:)
@@ -251,7 +251,7 @@ class Oaisys::PMHController < Oaisys::ApplicationController
   end
 
   def params_from_resumption_token(resumption_token:, verb:)
-    Oaisys::Engine.config.redis.get_parameters(resumption_token: resumption_token, verb: verb, identifier: user_agent)
+    Oaisys::Engine.config.redis.get_parameters(resumption_token:, verb:, identifier: user_agent)
   end
 
   def user_agent

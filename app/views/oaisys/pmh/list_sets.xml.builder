@@ -25,10 +25,10 @@ xml.ListSets do
     xml.tag!('set') do
       xml.setSpec(full_set_id) if full_set_id.present?
       xml.setName full_set_name
-      set_description(xml: xml, description: description)
+      set_description(xml:, description:)
     end
   end
-  resumption_token(xml_object: xml, complete_list_size: complete_list_size, cursor: cursor,
-                   resumption_token: resumption_token, last_page: last_page,
-                   resumption_token_provided: resumption_token_provided)
+  resumption_token(xml_object: xml, complete_list_size:, cursor:,
+                   resumption_token:, last_page:,
+                   resumption_token_provided:)
 end
