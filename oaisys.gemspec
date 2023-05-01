@@ -21,20 +21,10 @@ Gem::Specification.new do |spec|
     spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
   else
     raise 'RubyGems 2.0 or newer is required to protect against ' \
-      'public gem pushes.'
+          'public gem pushes.'
   end
 
   spec.files = Dir['{app,config,db,lib}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.md']
 
-  spec.add_dependency 'builder', '~> 3.0'
-  spec.add_dependency 'nanoid'
-  spec.add_dependency 'rails', '>= 5.2.3', '< 7'
-  spec.add_dependency 'redis', '~> 4.1'
-
-  spec.add_dependency 'pg'
-  spec.add_dependency 'rubocop'
-  spec.add_dependency 'rubocop-performance'
-  spec.add_dependency 'rubocop-rails'
-
-  spec.add_development_dependency 'pry'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end

@@ -17,3 +17,16 @@ gemspec
 # RDF stuff
 gem 'acts_as_rdfable', github: 'ualbertalib/acts_as_rdfable', tag: 'v0.2.4'
 gem 'builder_deferred_tagging', github: 'ualbertalib/builder_deferred_tagging', tag: 'v0.01'
+
+gem 'builder', '~> 3.0'
+gem 'nanoid'
+gem 'pg'
+gem 'rails', '>= 5.2.3', '< 7'
+gem 'redis', '~> 4.1'
+
+group :development, :test do
+  gem 'pry'
+  gem 'rubocop', '~> 1.7'
+  gem 'rubocop-performance'
+  gem 'rubocop-rails', '~> 2.19', '>= 2.19.1'
+end
