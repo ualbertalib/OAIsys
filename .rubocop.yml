@@ -135,3 +135,5 @@ Style/WordArray:
 Performance/TimesMap:
   Enabled: false
 
+Lint/SymbolConversion:
+  EnforcedStyle: consistent

@@ -1,6 +1,6 @@
 xml.push_deferred_attribute('xmlns:dc': 'http://purl.org/dc/elements/1.1/',
                             'xmlns:oai-id': 'http://www.openarchives.org/OAI/2.0/oai-identifier',
-                            xmlns: 'http://www.openarchives.org/OAI/2.0/',
+                            'xmlns': 'http://www.openarchives.org/OAI/2.0/',
                             'xmlns:etd_ms': 'http://www.ndltd.org/standards/metadata/etdms/1.0/',
                             'xmlns:atom': 'http://www.w3.org/2005/Atom',
                             'xmlns:rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
