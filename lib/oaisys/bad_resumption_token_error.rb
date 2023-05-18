@@ -3,6 +3,7 @@ class Oaisys::BadResumptionTokenError < Oaisys::PMHError
   attr_reader :parameters
 
   def initialize
+    super
     @parameters = {}
   end
 

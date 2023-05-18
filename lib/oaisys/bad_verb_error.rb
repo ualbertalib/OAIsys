@@ -4,6 +4,7 @@ class Oaisys::BadVerbError < Oaisys::PMHError
 
   # Pass nil for bad_verb if verb parameter wasn't given.
   def initialize(bad_verb:)
+    super
     @parameters = {}
     @bad_verb = bad_verb
   end

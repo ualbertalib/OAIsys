@@ -15,7 +15,8 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
   ExtraDetails: true
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 3.1
+  NewCops: enable
 
 # readability is Actually Good
 Layout/EmptyLinesAroundClassBody:
@@ -45,7 +46,7 @@ Metrics/CyclomaticComplexity:
 Layout/LineLength:
   Enabled: true
   Max: 120 # default is 80
-  IgnoredPatterns: ['\A\s*#'] # tweak to ignore long comments, which often are examples or URLs that are not easily broken up
+  AllowedPatterns: ['\A\s*#'] # tweak to ignore long comments, which often are examples or URLs that are not easily broken up
 
 # Avoid methods longer than 10 lines of code.
 Metrics/MethodLength:
@@ -133,3 +134,6 @@ Style/WordArray:
 
 Performance/TimesMap:
   Enabled: false
+
+Lint/SymbolConversion:
+  EnforcedStyle: consistent

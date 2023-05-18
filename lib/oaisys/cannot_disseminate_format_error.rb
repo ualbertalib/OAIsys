@@ -3,6 +3,7 @@ class Oaisys::CannotDisseminateError < Oaisys::PMHError
   attr_reader :parameters
 
   def initialize(parameters:)
+    super
     @parameters = parameters
   end
 
