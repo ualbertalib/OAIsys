@@ -7,6 +7,14 @@ require:
   - rubocop-performance
   - rubocop-rails
 
+inherit_from:
+  - https://raw.githubusercontent.com/ualbertalib/library_applications_development_inclusive_language/main/inclusive_language_rubocop.yml
+
+# Exclude checking for the term 'dummy' here as it is included in the Rails generator.
+Naming/InclusiveLanguage:
+  Exclude:
+    - 'test/dummy/**/*'
+
 AllCops:
   DisplayCopNames: true
   DisplayStyleGuide: true
